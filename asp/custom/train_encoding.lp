@@ -12,7 +12,7 @@ celltype(C) :- cell(_,C).
 
 % convert start predicate to position predicate
 
-position(ID,(X,Y),Dep,Dir) :- start(ID,(X,Y),Dep,Dir).
+position(ID,(X,Y),Dep+1,Dir) :- start(ID,(X,Y),Dep,Dir).
 
 % define states (cell, time, direction), which are reachable by a train 
 
@@ -32,9 +32,9 @@ chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_), position(ID,(X2,Y2),T2,_)
 
 action(train(ID),A,T) :- chosen(ID,T,A,_,_,_,_,_).
 
-action(train(ID),move_forward,Dep-1) :- start(ID,_,Dep,_), Dep > 0.
+action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_), Dep > 0.
 
-action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-2.
+action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-1.
 
 
 % for inverse speed !=1: define interval to stay in a cell

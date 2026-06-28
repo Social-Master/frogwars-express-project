@@ -20,7 +20,7 @@ temp_speed(ID, Dep, 4) :- start(ID,(_,_),Dep,_).
 
 % convert start predicate to position predicate
 
-position(ID,(X,Y),Dep,Dir) :- start(ID,(X,Y),Dep,Dir).
+position(ID,(X,Y),Dep+1,Dir) :- start(ID,(X,Y),Dep,Dir).
 
 % define states (cell, time, direction), which are reachable by a train 
 
@@ -39,6 +39,10 @@ reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1), temp_sp
 chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_), position(ID,(X2,Y2),T2,_), reachable(ID,T,A,X2,Y2,T2,_).
 
 action(train(ID),A,T) :- chosen(ID,T,A,_,_,_,_,_).
+
+action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_), Dep > 0.
+
+action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-1.
 
 % a train can change its speed by one each position change, if not exceeding a limit
 
