@@ -1,3 +1,6 @@
 output/
 tmp/
 notes/
+.DS_Store
+asp/.DS_Store
+modules/.DS_Store
