@@ -1,0 +1,10 @@
+Basic Outline
+
+Introduction: Energy Efficiency Problem
+Baseline ASP Model
+Motivation for Energy Optimization
+Energy Encoding Mechanics
+Energy Costs of Actions
+Search Optimization and Heuristics
+Results and Comparison with Baseline Model
+Conclusion

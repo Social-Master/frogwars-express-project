@@ -1,6 +1,13 @@
 output/
-tmp/
 notes/
 .DS_Store
 asp/.DS_Store
 modules/.DS_Store
+text/presentation.aux
+text/presentation.log
+text/presentation.nav
+text/presentation.out
+text/presentation.snm
+text/presentation.synctex.gz
+text/presentation.toc
+tmp/
