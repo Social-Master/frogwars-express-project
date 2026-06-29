@@ -11,3 +11,5 @@ text/presentation.snm
 text/presentation.synctex.gz
 text/presentation.toc
 tmp/
+asp/__pycache__/
+tmp/frames/

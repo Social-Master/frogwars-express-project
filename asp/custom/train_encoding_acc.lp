@@ -1,6 +1,7 @@
 #include "basics/directions.lp".
 #include "basics/movement.lp".
 #include "basics/transitions.lp".
+#include "basics/actions.lp".
 
 % possible times
 
@@ -37,12 +38,6 @@ reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1), temp_sp
 % define action predicate (this is just for visualization purposes)
 
 chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_), position(ID,(X2,Y2),T2,_), reachable(ID,T,A,X2,Y2,T2,_).
-
-action(train(ID),A,T) :- chosen(ID,T,A,_,_,_,_,_).
-
-action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_), Dep > 0.
-
-action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-1.
 
 % a train can change its speed by one each position change, if not exceeding a limit
 
