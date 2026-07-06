@@ -1,0 +1,65 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[backend=biber, style=apa, sorting=ynt]{biblatex}
+
+\title{Energy Efficiency in Railway Scheduling}
+\author{Paul Tennigkeit, Georgi Abshilava}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\section{Encoding Energy Efficiency in ASP}
+\subsection{Baseline Encoding}
+Flatland is a framework for simulating railway networks. A Flatland environment consists of a two dimensional plane made up of different types of cells, some of which containing different types of interconnected tracks, and agents moving around on them from a starting point to an end point. Agents have an earliest departure and arrival time, and a pre-defined speed, represented by an inverse value. To limit the time of the simulation, a global time frame is set.
+
+The baseline ASP encoding handles all essential train and environment behavior, including defining legal transitions and movements, possible directions, and actions.
+
+\paragraph{Directions}
+There are four possible directions agents can go and point towards: North, south, east and west. Each is defined as a fact:
+\begin{verbatim}
+dir(n). dir(s). dir(e). dir(w).
+\end{verbatim}
+
+\paragraph{Movements}
+Each possible movement is defined as a fact:
+\begin{verbatim}
+moving(move_forward).
+moving(move_left).
+moving(move_right).
+\end{verbatim}
+\texttt{delta()} defines what it means to "move" in each direction:
+\begin{verbatim}
+% The origin is located in the top left in Flatland, and 
+% the coordinates increment downwards
+
+delta(A,s,1,0)  :- moving(A).
+delta(A,n,-1,0) :- moving(A).
+delta(A,e,0,1)  :- moving(A).
+delta(A,w,0,-1) :- moving(A).
+\end{verbatim}
+
+
+\paragraph{Transitions}
+In order to represent different types of tracks, \texttt{transitions()} predicates are defined for each:
+
+\begin{verbatim}
+% ID  : track ID
+% Dir1: pointing direction of agent
+% Act : associated action with movement towards exit
+% Dir2: exit direction
+transition(ID, Dir1, Act, Dir2).
+\end{verbatim}
+
+Due to the way this predicate is built, each track type is defined multiple times depending on its number of exit directions (e.g. straight tracks have two possible exits, north and south, and are, therefore, defined twice for each possible exit).
+
+\paragraph{Actions}
+
+\subsection{Energy Encoding Mechanics}
+\subsection{Energy Costs of Actions}
+\subsection{Search Optimization and Heuristics}
+\subsection{Results}
+\section{Conclusion}
+
+\end{document}
