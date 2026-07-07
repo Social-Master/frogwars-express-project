@@ -40,10 +40,8 @@ delta(A,e,0,1)  :- moving(A).
 delta(A,w,0,-1) :- moving(A).
 \end{verbatim}
 
-
 \paragraph{Transitions}
 In order to represent different types of tracks, \texttt{transitions()} predicates are defined for each:
-
 \begin{verbatim}
 % ID  : track ID
 % Dir1: pointing direction of agent
@@ -51,10 +49,31 @@ In order to represent different types of tracks, \texttt{transitions()} predicat
 % Dir2: exit direction
 transition(ID, Dir1, Act, Dir2).
 \end{verbatim}
-
 Due to the way this predicate is built, each track type is defined multiple times depending on its number of exit directions (e.g. straight tracks have two possible exits, north and south, and are, therefore, defined twice for each possible exit).
 
 \paragraph{Actions}
+The \texttt{action()} predicate is used as an interface between the Flatland visualization engine and the Clingo logic:
+\begin{verbatim}
+% train(ID): A train with an ID
+% A        : An action
+% T        : The time step action A is taken
+action(train(ID),A,T) :- chosen(ID,T,A,_,_,_,_,_).
+action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_), Dep > 0.
+action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-1.
+\end{verbatim}
+
+\paragraph{Collision Constraints}
+Like in real life, collisions between trains is to be avoided. To achieve this, the following constraints are employed:
+\begin{verbatim}
+% Trains can not occupy the same cell at the same time
+:- stay(ID1,X,Y,T), stay(ID2,X,Y,T), ID1 < ID2.
+
+% Trains can not swap their position
+:- stay(ID1,X1,Y1,T), stay(ID2,X2,Y2,T),
+   stay(ID1,X2,Y2,T+1), stay(ID2,X1,Y1,T+1), ID1 < ID2.
+\end{verbatim}
+
+\paragraph{Reachability Constraints}
 
 \subsection{Energy Encoding Mechanics}
 \subsection{Energy Costs of Actions}
