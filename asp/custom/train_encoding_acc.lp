@@ -5,7 +5,7 @@
 
 % possible times
 
- time(0..MaxTime) :- global(MaxTime).
+time(0..MaxTime) :- global(MaxTime).
 
 % define celltypes 
 
@@ -62,7 +62,6 @@ chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_), position(ID,(X2,Y2),T2,_)
 
 stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2), time(T1), T <= T1, T1 < T2.
 
- 
 % trains can not occupy the same cell at the same time
 
 :- stay(ID1,X,Y,T), stay(ID2,X,Y,T), ID1 < ID2.

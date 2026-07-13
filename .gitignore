@@ -28,3 +28,4 @@ tmp/frames/
 modules/__pycache__/dirs.cpython-310.pyc
 modules/__pycache__/save.cpython-310.pyc
 envs/.DS_Store
+output/.DS_Store

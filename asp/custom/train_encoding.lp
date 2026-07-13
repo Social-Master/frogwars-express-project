@@ -66,6 +66,8 @@ wait_position(ID,X2,Y2,T2,Dir2) :- reachable(ID,T,wait,X2,Y2,T2,Dir2).
 
 #heuristic position(ID,(X2,Y2),T2,Dir2) : wait_position(ID,X2,Y2,T2,Dir2). [-50,1]
 
+#heuristic position(ID,(X,Y),T,Dir) : start(ID,_,Dep,_). [-Dep,1]
+
 % minimize summed arrival times
 
 #minimize { T@2,ID : arrival(ID,T) }.
