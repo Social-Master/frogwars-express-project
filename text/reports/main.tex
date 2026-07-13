@@ -74,6 +74,65 @@ Like in real life, collisions between trains is to be avoided. To achieve this, 
 \end{verbatim}
 
 \paragraph{Reachability Constraints}
+To simulate movement across the grid over time, a train's initial departure parameters are first converted into a \texttt{position()} state:
+\begin{verbatim}
+position(ID,(X,Y),Dep+1,Dir) :- start(ID,(X,Y),Dep,Dir).
+\end{verbatim}
+
+From any current position, valid future states are derived using the \texttt{reachable()} predicate by checking cell track transitions, movement coordinate deltas, and the train's speed:
+\begin{verbatim}
+reachable(ID,T,A,X2,Y2,T2,Dir2) :- A != wait,
+                                   position(ID,(X,Y),T,Dir1),
+                                   cell((X,Y),Cell),
+                                   transition(Cell,Dir1,A,Dir2),
+                                   delta(A,Dir2,DX,DY),
+                                   X2 = X + DX,
+                                   Y2 = Y + DY,
+                                   speed(ID,S),
+                                   T2 = T + S,
+                                   time(T2).
+reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1).
+\end{verbatim}
+
+At each discrete time step, a choice rule ensures exactly one valid transition is taken until the destination is reached:
+\begin{verbatim}
+1 { position(ID,(X2,Y2),T2,Dir2) 
+    : reachable(ID,T,A,X2,Y2,T2,Dir2) } 1 
+    :- position(ID,(_,_),T,_), not reached(ID,T).
+\end{verbatim}
+
+In order to properly enforce the collision constraints, the time interval a train spends inside a specific cell must be tracked:
+\begin{verbatim}
+% define action predicate (this is just for visualization purposes)
+chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_),
+                               position(ID,(X2,Y2),T2,_),
+                               reachable(ID,T,A,X2,Y2,T2,_).
+\end{verbatim}
+
+Because trains can have an inverse speed greater than 1 (meaning they traverse a cell over multiple time steps), the \texttt{stay()} predicate marks every time step a cell is occupied between entering and leaving:
+\begin{verbatim}
+% for inverse speed !=1: define interval to stay in a cell
+stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2), time(T1), T <= T1, T1 < T2.
+\end{verbatim}
+
+\paragraph{Target Arrival}
+A train successfully completes its journey when its current coordinates match its designated target destination:
+\begin{verbatim}
+reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_). 
+\end{verbatim}
+
+To ensure valid and bounded schedules, integrity constraints prohibit arrivals after a train's latest allowable arrival time and terminate search branches where a train can physically no longer reach its end coordinates within the maximum global time limit:
+\begin{verbatim}
+% a train is not allowed to reach its target after the latest arrival time
+:- reached(ID,T), end(ID,(_,_),Arr), T > Arr.
+
+% stop searching if train is not able to reach its target anymore
+:- position(ID,(X,Y),T,_),
+end(ID,(EX,EY),_),
+speed(ID,InvSpd),
+global(MaxTime),
+T + (|X-EX| + |Y-EY|)*InvSpd > MaxTime.
+\end{verbatim}
 
 \subsection{Energy Encoding Mechanics}
 \subsection{Energy Costs of Actions}
