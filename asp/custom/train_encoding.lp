@@ -44,13 +44,5 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
 arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 
-% prefer to not wait (HEURISTICS NEED CLINGO 5 OR HIGHER)
-% Does not significantly reduce mean runtime because proving optimality is
-% the main bottleneck, but tends to find good solutions earlier and reduces
-% runtime variance by guiding the search more consistently. 
-wait_position(ID,X2,Y2,T2,Dir2) :- reachable(ID,T,wait,X2,Y2,T2,Dir2).
-#heuristic position(ID,(X2,Y2),T2,Dir2) : wait_position(ID,X2,Y2,T2,Dir2). [-50,1]
-#heuristic position(ID,(X,Y),T,Dir) : start(ID,_,Dep,_). [-Dep,1]
-
 % minimize summed arrival times
 #minimize { T@2,ID : arrival(ID,T) }.
