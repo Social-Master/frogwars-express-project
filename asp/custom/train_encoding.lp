@@ -34,11 +34,8 @@ stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2), time(T1), T <= T1, T1 < T2.
 % a train reached its target if their position matches 
 reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_). 
 
-% a train is not allowed to reach its target after the latest arrival time
-:- reached(ID,T), end(ID,(_,_),Arr), T > Arr.
-
-% stop searching if train is not able to reach its target anymore
-:- position(ID,(X,Y),T,_), end(ID,(EX,EY),_), speed(ID,InvSpd), global(MaxTime), T + (|X-EX| + |Y-EY|)*InvSpd > MaxTime.
+% stop searching if train is not in time to reach its target anymore
+:- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
 % the arrival times should be minimized (@2-higher priority than wait minimization)
 reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
