@@ -1,10 +1,11 @@
-\documentclass[12pt, a4paper]{article}
+\documentclass[12pt, a4paper]{llncs}
 
 \usepackage[backend=biber, style=apa, sorting=ynt]{biblatex}
 
 \title{Energy Efficiency in Railway Scheduling}
-\author{Paul Tennigkeit, Georgi Abshilava}
-\date{July 2026}
+\author{Paul Tennigkeit \and Georgi Abshilava}
+\institute{University of Potsdam, Germany \\
+\email{\{tennigkeit, abshilava\}@uni-potsdam.de}}
 
 \begin{document}
 \maketitle
@@ -121,17 +122,26 @@ A train successfully completes its journey when its current coordinates match it
 reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_). 
 \end{verbatim}
 
-To ensure valid and bounded schedules, integrity constraints prohibit arrivals after a train's latest allowable arrival time and terminate search branches where a train can physically no longer reach its end coordinates within the maximum global time limit:
+To ensure valid and bounded schedules, a look-ahead integrity constraint terminates search branches where a train can physically no longer reach its end coordinates within its individual allowable arrival deadline:
 \begin{verbatim}
-% a train is not allowed to reach its target after the latest arrival time
-:- reached(ID,T), end(ID,(_,_),Arr), T > Arr.
+% stop searching if train is not in time to reach its target anymore
+:- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
+\end{verbatim}
+By evaluating the remaining distance multiplied by the train's inverse speed directly against its scheduled deadline, this single rule simultaneously prevents late arrivals and prunes unviable paths early in the search space.
 
-% stop searching if train is not able to reach its target anymore
-:- position(ID,(X,Y),T,_),
-end(ID,(EX,EY),_),
-speed(ID,InvSpd),
-global(MaxTime),
-T + (|X-EX| + |Y-EY|)*InvSpd > MaxTime.
+\paragraph{Schedule Optimization}
+Once valid routing pathways are established, the solver optimizes the schedule by minimizing overall transit delays. To ensure that trains are evaluated solely on their actual transit time rather than time spent idling at their destination after completion, the encoding isolates the precise time step $T$ at which a train first reaches its end coordinates:
+\begin{verbatim}
+% the arrival times should be minimized
+% (@2-higher priority than wait minimization)
+reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
+arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
+\end{verbatim}
+
+The \texttt{\#minimize} statement aggregates the arrival times of all agents and assigns this objective a priority level of \texttt{@2}. This high priority ensures that in extended multi-objective encodings—such as when factoring in energy consumption—minimizing passenger schedule delay always takes precedence over secondary optimization metrics.
+\begin{verbatim}
+% minimize summed arrival times
+#minimize { T@2, ID : arrival(ID,T) }.
 \end{verbatim}
 
 \subsection{Energy Encoding Mechanics}
