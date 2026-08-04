@@ -13,7 +13,7 @@ celltype(C) :- cell(_,C).
 max_speed(ID,S) :- speed(ID,S).
 
 % trains start with a speed of 1/4 
-temp_speed(ID, Dep, 4) :- start(ID,(_,_),Dep,_).
+temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
 
 % convert start predicate to position predicate
 position(ID,(X,Y),Dep+1,Dir) :- start(ID,(X,Y),Dep,Dir).
