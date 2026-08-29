@@ -60,19 +60,28 @@ The \texttt{action()} predicate is used as an interface between the Flatland vis
 % A        : An action
 % T        : The time step action A is taken
 action(train(ID),A,T) :- chosen(ID,T,A,_,_,_,_,_).
-action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_), Dep > 0.
-action(train(ID),wait,T) :- start(ID,_,Dep,_), Dep > 0, T = 0..Dep-1.
+action(train(ID),move_forward,Dep) :- start(ID,_,Dep,_),
+                                      Dep > 0.
+                                      
+action(train(ID),wait,T) :- start(ID,_,Dep,_),
+                            Dep > 0,
+                            T = 0..Dep-1.
 \end{verbatim}
 
 \paragraph{Collision Constraints}
 Like in real life, collisions between trains is to be avoided. To achieve this, the following constraints are employed:
 \begin{verbatim}
 % Trains can not occupy the same cell at the same time
-:- stay(ID1,X,Y,T), stay(ID2,X,Y,T), ID1 < ID2.
+:- stay(ID1,X,Y,T),
+   stay(ID2,X,Y,T),
+   ID1 < ID2.
 
 % Trains can not swap their position
-:- stay(ID1,X1,Y1,T), stay(ID2,X2,Y2,T),
-   stay(ID1,X2,Y2,T+1), stay(ID2,X1,Y1,T+1), ID1 < ID2.
+:- stay(ID1,X1,Y1,T),
+   stay(ID2,X2,Y2,T),
+   stay(ID1,X2,Y2,T+1),
+   stay(ID2,X1,Y1,T+1),
+   ID1 < ID2.
 \end{verbatim}
 
 \paragraph{Reachability Constraints}
@@ -93,7 +102,9 @@ reachable(ID,T,A,X2,Y2,T2,Dir2) :- A != wait,
                                    speed(ID,S),
                                    T2 = T + S,
                                    time(T2).
-reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1).
+                                   
+reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir),
+                                    time(T+1).
 \end{verbatim}
 
 At each discrete time step, a choice rule ensures exactly one valid transition is taken until the destination is reached:
@@ -114,24 +125,27 @@ chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_),
 Because trains can have an inverse speed greater than 1 (meaning they traverse a cell over multiple time steps), the \texttt{stay()} predicate marks every time step a cell is occupied between entering and leaving:
 \begin{verbatim}
 % for inverse speed !=1: define interval to stay in a cell
-stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2), time(T1), T <= T1, T1 < T2.
+stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2),
+                   time(T1), T <= T1, T1 < T2.
 \end{verbatim}
 
 \paragraph{Target Arrival}
 A train successfully completes its journey when its current coordinates match its designated target destination:
 \begin{verbatim}
-reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_). 
+reached(ID,T) :- position(ID,(X,Y),T,_),
+                 end(ID,(X,Y),_). 
 \end{verbatim}
 
 To ensure valid and bounded schedules, a look-ahead integrity constraint terminates search branches where a train can physically no longer reach its end coordinates within its individual allowable arrival deadline:
 \begin{verbatim}
-% stop searching if train is not in time to reach its target anymore
+% stop searching if train is not in time
+% to reach its target anymore
 :- position(ID,(X,Y),T,_),
    end(ID,(EX,EY),Arr),
    speed(ID,InvSpd),
    T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 \end{verbatim}
-By evaluating the remaining distance multiplied by the train's inverse speed directly against its scheduled deadline, this single rule simultaneously prevents late arrivals and prunes unviable paths early in the search space.
+By evaluating the remaining Manhattan distance multiplied by the train's inverse speed directly against its scheduled deadline, this single rule simultaneously prevents late arrivals and prunes unviable paths early in the search space.
 
 \paragraph{Schedule Optimization}
 Once valid routing pathways are established, the solver optimizes the schedule by minimizing overall transit delays. To ensure that trains are evaluated solely on their actual transit time rather than time spent idling at their destination after completion, the encoding isolates the precise time step $T$ at which a train first reaches its end coordinates:
@@ -142,7 +156,7 @@ reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
 arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 \end{verbatim}
 
-The \texttt{\#minimize} statement aggregates the arrival times of all agents and assigns this objective a priority level of \texttt{@2}. This high priority ensures that in extended multi-objective encodings—such as when factoring in energy consumption—minimizing passenger schedule delay always takes precedence over secondary optimization metrics.
+The \texttt{\#minimize} statement aggregates the arrival times of all agents and assigns this objective a priority level of \texttt{@2}. This high priority ensures that in extended multi-objective encodings minimizing passenger schedule delay always takes precedence over secondary optimization metrics.
 \begin{verbatim}
 % minimize summed arrival times
 #minimize { T@2, ID : arrival(ID,T) }.
@@ -173,7 +187,7 @@ Depending how fast the train moves or accelerates, it consumes different amounts
 \begin{verbatim}
 % This rule calculates the energy cost of waiting,
 % which is CF * 24 / S. The penalty is only applied 
-% once, when the train first hit the breaks.
+% once, when the train first hit the brakes.
 % This behavior is reflected by the rule
 % not prev_wait(ID,T).
 energy(ID,T+1,E) :- action(train(ID),wait,T),
@@ -202,13 +216,16 @@ energy(ID,T2,E) :- position(ID,_,T,Dir1),
                    cost_fac(ID,CF),
                    E = CF * 12 / S.
                    
-% The \prev_wait()}rule is required in order to make sure, the agent is not constantly penalized for waiting in every time step.
+% The prev_wait() rule is required in order to make sure,
+% the agent is not constantly penalized for waiting in
+% every time step.
 prev_wait(ID,T) :- action(train(ID),_,T), 
                    time(T-1),
                    action(train(ID),wait,T-1).
 \end{verbatim}
 
-\subsection{Search Optimization and Heuristics}
+\paragraph{Optimizing the Energy Encoding}
+The energy encoding adds the rule \texttt{\#minimize \{ E@1,ID,T : energy(ID,T,E) \}.} to also optimize fuel efficiency. As it is assigned the weight \texttt{@1}, the solver optimizes for arrival time first, which is assigned \texttt{@2}. Fuel efficiency is then optimized within the bounds of the best possible arrival times. 
 \subsection{Results}
 \section{Conclusion}
 
