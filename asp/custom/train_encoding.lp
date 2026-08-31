@@ -19,7 +19,6 @@ reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1).
 % transitions: for every combination of ID and T, choose one reachable(), which gets true as a position()
 1 { position(ID,(X2,Y2),T2,Dir2) :  reachable(ID,T,A,X2,Y2,T2,Dir2) } 1 :- position(ID,(_,_),T,_), not reached(ID,T).
 
-% define action predicate (this is just for visualization purposes)
 chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_), position(ID,(X2,Y2),T2,_), reachable(ID,T,A,X2,Y2,T2,_).
 
 % for inverse speed !=1: define interval to stay in a cell
@@ -37,9 +36,11 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 % stop searching if train is not in time to reach its target anymore
 :- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
-% the arrival times should be minimized (@2-higher priority than wait minimization)
-%reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-%arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
+% the arrival times should be minimized
+reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
+arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 
 % minimize summed arrival times
-%#minimize { T@2,ID : arrival(ID,T) }.
+#minimize { T@2,ID : arrival(ID,T) }.
+
+#show position/4.

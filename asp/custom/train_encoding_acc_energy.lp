@@ -80,3 +80,6 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 
 %#minimize { T@2,ID : arrival(ID,T) }.
 %#minimize { E@1,ID,T : energy(ID,T,E) }.
+
+#show position/4.
+#show temp_speed/3.

@@ -69,7 +69,7 @@ action(train(ID),wait,T) :- start(ID,_,Dep,_),
 \end{verbatim}
 
 \paragraph{Collision Constraints}
-Like in real life, collisions between trains is to be avoided. To achieve this, the following constraints are employed:
+Like in real life, collisions between trains are to be avoided. To achieve this, the following constraints are employed:
 \begin{verbatim}
 % Trains can not occupy the same cell at the same time
 :- stay(ID1,X,Y,T),
@@ -116,7 +116,6 @@ At each discrete time step, a choice rule ensures exactly one valid transition i
 
 In order to properly enforce the collision constraints, the time interval a train spends inside a specific cell must be tracked:
 \begin{verbatim}
-% define action predicate (this is just for visualization purposes)
 chosen(ID,T,A,X,Y,X2,Y2,T2) :- position(ID,(X,Y),T,_),
                                position(ID,(X2,Y2),T2,_),
                                reachable(ID,T,A,X2,Y2,T2,_).
@@ -151,9 +150,11 @@ By evaluating the remaining Manhattan distance multiplied by the train's inverse
 Once valid routing pathways are established, the solver optimizes the schedule by minimizing overall transit delays. To ensure that trains are evaluated solely on their actual transit time rather than time spent idling at their destination after completion, the encoding isolates the precise time step $T$ at which a train first reaches its end coordinates:
 \begin{verbatim}
 % the arrival times should be minimized
-% (@2-higher priority than wait minimization)
-reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
+reached_earlier(ID,T) :- reached(ID,T),
+                         reached(ID,T0),
+                         T0 < T.
+arrival(ID,T) :- reached(ID,T),
+                 not reached_earlier(ID,T).
 \end{verbatim}
 
 The \texttt{\#minimize} statement aggregates the arrival times of all agents and assigns this objective a priority level of \texttt{@2}. This high priority ensures that in extended multi-objective encodings minimizing passenger schedule delay always takes precedence over secondary optimization metrics.
@@ -187,7 +188,7 @@ Depending how fast the train moves or accelerates, it consumes different amounts
 \begin{verbatim}
 % This rule calculates the energy cost of waiting,
 % which is CF * 24 / S. The penalty is only applied 
-% once, when the train first hit the brakes.
+% once, when the train first hits the brakes.
 % This behavior is reflected by the rule
 % not prev_wait(ID,T).
 energy(ID,T+1,E) :- action(train(ID),wait,T),
