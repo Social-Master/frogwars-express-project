@@ -38,8 +38,8 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 :- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
 % the arrival times should be minimized (@2-higher priority than wait minimization)
-reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
+%reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
+%arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 
 % minimize summed arrival times
-#minimize { T@2,ID : arrival(ID,T) }.
+%#minimize { T@2,ID : arrival(ID,T) }.
