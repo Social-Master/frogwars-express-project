@@ -60,8 +60,5 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 % stop searching if train is not in time to reach its target anymore
 :- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
-% the arrival times should be minimized
-%reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-%arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
-
-%#minimize { T@2,ID : arrival(ID,T) }.
+#show position/4.
+#show temp_speed/3.
