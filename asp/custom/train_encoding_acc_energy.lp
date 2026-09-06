@@ -74,12 +74,19 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 % stop searching if train is not in time to reach its target anymore
 :- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
-% the arrival times should be minimized 
-%reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-%arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
+% prefer to not wait
 
-%#minimize { T@2,ID : arrival(ID,T) }.
-%#minimize { E@1,ID,T : energy(ID,T,E) }.
+wait_position(ID,X2,Y2,T2,Dir2) :- reachable(ID,T,wait,X2,Y2,T2,Dir2).
+#heuristic position(ID,(X2,Y2),T2,Dir2) : wait_position(ID,X2,Y2,T2,Dir2). [-50,1]
+
+% schedule trains one by one
+
+#heuristic position(ID,(X,Y),T,Dir) : start(ID,_,Dep,_). [-Dep,1]
+
+% prefer getting faster
+
+#heuristic temp_speed(ID,T,S) : position(ID,_,T,_). [-S,1]
 
 #show position/4.
 #show temp_speed/3.
+#show energy/3.
