@@ -58,9 +58,9 @@ stay(ID,X,Y,T1) :- chosen(ID,T,_,X,Y,_,_,T2), time(T1), T <= T1, T1 < T2.
 
 % define energy costs of transitions:
 prev_wait(ID,T) :- action(train(ID),_,T), time(T-1), action(train(ID),wait,T-1).
-energy(ID,T+1,E) :- action(train(ID),wait,T), speed(ID,S), not prev_wait(ID,T), cost_fac(ID,CF), E = CF * 24 / S.
-energy(ID,T2,E) :- action(train(ID),A,T), A != wait, position(ID,_,T,Dir), speed(ID,S), T2 = T + S, position(ID,_,T2,Dir), cost_fac(ID,CF), E = CF .
-energy(ID,T2,E) :- position(ID,_,T,Dir1), speed(ID,S), T2 = T + S, position(ID,_,T2,Dir2), Dir1 != Dir2, cost_fac(ID,CF), E = CF * 12 / S.
+energy(ID,T+1,E) :- action(train(ID),wait,T), not prev_wait(ID,T), cost_fac(ID,CF), E = -1 * 4/10 * CF * 1/4 * 1/4.
+energy(ID,T2,E) :- action(train(ID),A,T), A != wait, position(ID,_,T,Dir), temp_speed(ID,T,S), T2 = T + S, position(ID,_,T2,Dir), cost_fac(ID,CF), E = CF * 1/S * 1/S.
+energy(ID,T2,E) :- position(ID,_,T,Dir1), temp_speed(ID,T,S), T2 = T + S, position(ID,_,T2,Dir2), Dir1 != Dir2, cost_fac(ID,CF), E = CF * 1/S * 1/S  * 11/10.
 
 % trains can not occupy the same cell at the same time
 :- stay(ID1,X,Y,T), stay(ID2,X,Y,T), ID1 < ID2.
@@ -74,12 +74,6 @@ reached(ID,T) :- position(ID,(X,Y),T,_), end(ID,(X,Y),_).
 % stop searching if train is not in time to reach its target anymore
 :- position(ID,(X,Y),T,_), end(ID,(EX,EY),Arr), speed(ID,InvSpd), T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
 
-% the arrival times should be minimized 
-%reached_earlier(ID,T) :- reached(ID,T), reached(ID,T0), T0 < T.
-%arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
-
-%#minimize { T@2,ID : arrival(ID,T) }.
-%#minimize { E@1,ID,T : energy(ID,T,E) }.
-
 #show position/4.
 #show temp_speed/3.
+#show energy/3.
