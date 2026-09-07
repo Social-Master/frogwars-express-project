@@ -1,6 +1,8 @@
 \documentclass[12pt, a4paper]{llncs}
 
 \usepackage[backend=biber, style=apa, sorting=ynt]{biblatex}
+\usepackage{graphicx}
+\usepackage{float}
 
 \title{Energy Efficiency in Railway Scheduling}
 \author{Paul Tennigkeit \and Georgi Abshilava}
@@ -227,7 +229,36 @@ prev_wait(ID,T) :- action(train(ID),_,T),
 
 \paragraph{Optimizing the Energy Encoding}
 The energy encoding adds the rule \texttt{\#minimize \{ E@1,ID,T : energy(ID,T,E) \}.} to also optimize fuel efficiency. As it is assigned the weight \texttt{@1}, the solver optimizes for arrival time first, which is assigned \texttt{@2}. Fuel efficiency is then optimized within the bounds of the best possible arrival times. 
+
+\subsection{Acceleration Encoding Mechanics}
+This is an extension to the energy encoding, that also models the trains' acceleration.
+
+\paragraph{Maximum and Initial Speeds}
+The environment created for the experiments also defined the trains' speeds in form of \texttt{speed()} predicates, which is actually interpreted as an inverse speed (e.g. a \texttt{speed} of 4 actually means, that a train would be 25\% slower). To model acceleration, \texttt{speed()} is reinterpreted as \texttt{max\_speed()}.
+
+\begin{verbatim}
+% interpret given train speeds as maximum speeds
+max_speed(ID,S) :- speed(ID,S).
+\end{verbatim}
+
+As a train starts moving, it initially has a speed of 0.25.
+
+\begin{verbatim}
+% trains start with a speed of 1/4 
+temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
+\end{verbatim}
+
+\paragraph{Dynamic Speed Change}
+
 \subsection{Results}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{environment.png}
+  \caption{Flatland environment used for all experiments}
+  \label{fig:environment_image}
+\end{figure}
+
+
 \section{Conclusion}
 
 \end{document}
