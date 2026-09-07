@@ -350,6 +350,8 @@ Calls        : 1
 Time         : 2884.333s (Solving: 2865.63s 1st Model: 0.42s Unsat: 2154.76s)
 CPU Time     : 2860.275s
 
+![Energy animation](../output/replay_1788812776/animation.gif)
+
 ### 4. Energy + Acceleration Encoding
 
 Answer: 1 (Time: 32.523s)
