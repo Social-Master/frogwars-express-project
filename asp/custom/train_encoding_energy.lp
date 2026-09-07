@@ -60,3 +60,4 @@ arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 
 #show position/4.
 #show energy/3.
+#show action/3.

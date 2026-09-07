@@ -4,7 +4,8 @@
 ![Environment picture](../envs/png/my_test_3.png)
 
 ### 2. Baseline Encoding
-Answer: 39 (Time: 28.017s)
+
+Answer: 39 (Time: 25.910s)
 
 position(0,(7,6),25,w)
 position(0,(7,5),26,w)
@@ -111,7 +112,7 @@ position(3,(13,14),45,s)
 position(3,(13,15),46,e)
 position(3,(13,16),47,e)
 position(3,(13,17),48,e)
-
+                                                                                                        
 Optimization: 216
 OPTIMUM FOUND
 
@@ -119,10 +120,10 @@ Models       : 39
   Optimum    : yes
 Optimization : 216
 Calls        : 1
-Time         : 28.300s (Solving: 12.69s 1st Model: 0.43s Unsat: 0.28s)
-CPU Time     : 27.565s
+Time         : 26.187s (Solving: 12.28s 1st Model: 0.46s Unsat: 0.28s)
+CPU Time     : 25.737s
 
-![Baseline animation](../output/1788657490.141151/animation.gif)
+![Baseline animation](../output/1788796778.9089222/animation.gif)
 
 ### 3. Energy-only Encoding
 Answer: 150 (Time: 681.138s)
@@ -351,7 +352,7 @@ CPU Time     : 2712.931s
 
 ### 4. Energy + Acceleration Encoding
 
-Answer: 1 (Time: 30.337s)
+Answer: 1 (Time: 32.523s)
 
 temp_speed(0,25,4)
 temp_speed(0,26,4)
@@ -713,8 +714,8 @@ energy(0,1,-5)
 energy(0,26,-5)
 energy(0,28,-5)
 energy(0,29,13)
-energy(0,30,13)
 energy(0,30,-5)
+energy(0,30,13)
 energy(0,31,13)
 energy(0,32,13)
 energy(0,45,13)
@@ -729,8 +730,8 @@ energy(0,51,50)
 energy(0,51,200)
 energy(0,53,50)
 energy(0,55,24)
-energy(0,56,50)
 energy(0,56,24)
+energy(0,56,50)
 energy(0,56,200)
 energy(0,57,200)
 energy(0,58,200)
@@ -753,11 +754,11 @@ energy(1,43,133)
 energy(1,43,300)
 energy(1,45,146)
 energy(1,46,146)
-energy(1,46,1200)
 energy(1,46,300)
+energy(1,46,1200)
 energy(1,48,300)
-energy(1,51,146)
 energy(1,50,146)
+energy(1,51,146)
 energy(1,51,300)
 energy(1,51,1200)
 energy(1,52,1200)
@@ -768,9 +769,9 @@ energy(1,56,1200)
 energy(1,57,1200)
 energy(1,58,1200)
 energy(1,60,300)
+energy(1,62,146)
 energy(1,62,300)
 energy(1,62,1200)
-energy(1,62,146)
 energy(1,63,1200)
 energy(1,64,1200)
 energy(2,1,-15)
@@ -809,8 +810,8 @@ energy(3,45,1200)
 energy(3,47,300)
 energy(3,49,146)
 energy(3,50,146)
-energy(3,50,1200)
 energy(3,50,300)
+energy(3,50,1200)
 energy(3,51,1200)
 energy(3,52,1200)
 energy(3,53,1200)
@@ -827,5 +828,7 @@ SATISFIABLE
 
 Models       : 1+
 Calls        : 1
-Time         : 30.338s (Solving: 0.42s 1st Model: 0.42s Unsat: 0.00s)
-CPU Time     : 29.135s
+Time         : 32.525s (Solving: 0.39s 1st Model: 0.39s Unsat: 0.00s)
+CPU Time     : 29.582s
+
+![Mixed animation](../output/replay_1788798622/animation.gif)

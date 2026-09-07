@@ -90,3 +90,4 @@ wait_position(ID,X2,Y2,T2,Dir2) :- reachable(ID,T,wait,X2,Y2,T2,Dir2).
 #show position/4.
 #show temp_speed/3.
 #show energy/3.
+#show action/3.
