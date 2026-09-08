@@ -249,6 +249,135 @@ temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
 \end{verbatim}
 
 \paragraph{Dynamic Speed Change}
+The \texttt{temp\_speed()} choice rules allow gradual speed changes while strictly respecting a train's physical limits. During each position change, a train can alter its inverse speed by a maximum of one step at a time.
+
+\begin{verbatim}
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 <= 4.
+\end{verbatim}
+
+To account for the upper and lower bounds of a train's speed capabilities, three additional choice rules handle edge cases: when a train is at its maximum speed, when it is at its minimum speed, or when both conditions apply simultaneously. In the later case, trains are forced to maintain their current speed.
+
+\begin{verbatim}
+% Lower bound
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 > 4.
+
+% Upper bound
+1{
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 < MS,
+   S+1 <= 4.
+
+% In between
+temp_speed(ID,T2,S)
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 < MS,
+   S+1 > 4.
+\end{verbatim}
+
+\paragraph{Post-Wait Acceleration}
+When a train decides to wait, it loses its momentum. The encoding dictates that after taking a \texttt{wait} action, a train must resume movement at the lowest possible speed, which corresponds to an inverse speed of 4.
+
+\begin{verbatim}
+% after waiting, you have to start with speed 1/4
+temp_speed(ID,T2,4)  :- chosen(ID,T,wait,_,_,_,_,T2).
+\end{verbatim}
+
+\paragraph{Turning and Arrival Physics}
+Realistic physics dictate that trains must decelerate before taking sharp turns or arriving at their destination. The model enforces that a train cannot take a turn at high speeds; it must slow down to an inverse speed of at least 3. Similarly, it must fully decelerate to an inverse speed of 4 upon reaching its final target.
+
+\begin{verbatim}
+% you have to take a turn with inverse speed >= 3 
+:- position(ID,_,T,Dir1),
+   temp_speed(ID,T,S),
+   T2 = T + S,
+   position(ID,_,T2,Dir2),
+   Dir1 != Dir2,
+   S < 3.
+
+% you can only arrive at your goal if your inverse speed was 4 before
+:- reached(ID,T2),
+   temp_speed(ID,T1,S),
+   T2 = T1 + S,
+   S < 4.
+\end{verbatim}
+
+\paragraph{Updated Energy Costs}
+The introduction of acceleration changes how energy consumption is calculated compared to the energy encoding, that does not take acceleration into account. The cost equations now heavily depend on the current inverse speed \texttt{S} and apply scaling multipliers to moving, waiting, and turning.
+
+\begin{verbatim}
+% Energy  cost of waiting
+energy(ID,T+1,E) :- action(train(ID),wait,T),
+                    not prev_wait(ID,T),
+                    cost_fac(ID,CF),
+                    E = -1 * 100 * 4/10 * CF * 1/4 * 1/4.
+
+% Energy  cost of moving
+energy(ID,T2,E) :- action(train(ID),A,T),
+                   A != wait,
+                   position(ID,_,T,Dir),
+                   temp_speed(ID,T,S),
+                   T2 = T + S,
+                   position(ID,_,T2,Dir),
+                   cost_fac(ID,CF),
+                   E = 100 * CF * 1/S * 1/S.
+
+% Energy  cost of turning
+energy(ID,T2,E) :- position(ID,_,T,Dir1),
+                   temp_speed(ID,T,S),
+                   T2 = T + S,
+                   position(ID,_,T2,Dir2),
+                   Dir1 != Dir2,
+                   cost_fac(ID,CF),
+                   E = 100 * CF * 1/S * 1/S  * 11/10.
+\end{verbatim}
+
+\paragraph{Solver Heuristics}
+To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly.
+
+\begin{verbatim}
+% prefer to not wait
+wait_position(ID,X2,Y2,T2,Dir2) 
+:- reachable(ID,T,wait,X2,Y2,T2,Dir2).
+
+#heuristic position(ID,(X2,Y2),T2,Dir2)
+           : wait_position(ID,X2,Y2,T2,Dir2). [-50,1]
+
+% schedule trains one by one
+#heuristic position(ID,(X,Y),T,Dir)
+           : start(ID,_,Dep,_). [-Dep,1]
+
+% prefer getting faster
+#heuristic temp_speed(ID,T,S)
+           : position(ID,_,T,_). [-S,1]
+\end{verbatim}
 
 \subsection{Results}
 \begin{figure}[htbp]
@@ -257,7 +386,6 @@ temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
   \caption{Flatland environment used for all experiments}
   \label{fig:environment_image}
 \end{figure}
-
 
 \section{Conclusion}
 
