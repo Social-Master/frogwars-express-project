@@ -27,7 +27,7 @@ temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
 position(ID,(X,Y),Dep+1,Dir) :- start(ID,(X,Y),Dep,Dir).
 
 % define states (cell, time, direction), which are reachable by a train 
-reachable(ID,T,A,X2,Y2,T2,Dir2) :- A!= wait, position(ID,(X,Y),T,Dir1), cell((X,Y),Cell), transition(Cell,Dir1,A,Dir2),delta(A,Dir2,DX,DY), X2 = X + DX, Y2 = Y + DY, speed(ID,S), T2 = T + S, time(T2).
+reachable(ID,T,A,X2,Y2,T2,Dir2) :- A!= wait, position(ID,(X,Y),T,Dir1), cell((X,Y),Cell), transition(Cell,Dir1,A,Dir2),delta(A,Dir2,DX,DY), X2 = X + DX, Y2 = Y + DY, temp_speed(ID,T,S), T2 = T + S, time(T2).
 
 % to be able to wait, you need to have speed 1/4
 reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1), temp_speed(ID,T,4).
