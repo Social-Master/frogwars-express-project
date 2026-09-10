@@ -5,7 +5,8 @@
 
 ### 2. Baseline Encoding
 
-Answer: 39 (Time: 25.490s)
+Optimization: 217
+Answer: 39 (Time: 26.006s)
 
                          action(train(0),wait,         0)
                          action(train(0),wait,         1)
@@ -114,12 +115,12 @@ position(1,( 8, 8),47,w) action(train(1),move_forward,47)
 position(1,( 8, 7),48,w) action(train(1),move_forward,48)
 position(1,( 8, 6),49,w)
 
-                         action(train(2),wait,        0)
-                         action(train(2),wait,        1)
-                         action(train(2),wait,        2)
-                         action(train(2),move_forward,3)
-position(2,(12,17), 4,w) action(train(2),move_forward,4)
-position(2,(12,16), 8,w) action(train(2),move_forward,8)
+                         action(train(2),wait,         0)
+                         action(train(2),wait,         1)
+                         action(train(2),wait,         2)
+                         action(train(2),move_forward, 3)
+position(2,(12,17), 4,w) action(train(2),move_forward, 4)
+position(2,(12,16), 8,w) action(train(2),move_forward, 8)
 position(2,(12,15),12,w) action(train(2),move_forward,12)
 position(2,(12,14),16,w) action(train(2),move_forward,16)
 position(2,(12,13),20,w) action(train(2),move_forward,20)
@@ -193,10 +194,10 @@ Models       : 39
   Optimum    : yes
 Optimization : 216
 Calls        : 1
-Time         : 25.781s (Solving: 12.48s 1st Model: 0.45s Unsat: 0.29s)
-CPU Time     : 25.417s
+Time         : 26.320s (Solving: 13.21s 1st Model: 0.43s Unsat: 0.31s)
+CPU Time     : 26.023s
 
-![Baseline animation](../output/baseline3/baseline3_animation.gif)
+![Baseline animation](../output/base/animation.gif)
 
 ### 3. Energy-only Encoding
 Optimization: 217 3336

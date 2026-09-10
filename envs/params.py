@@ -1,6 +1,6 @@
 # basic parameters
-width=25
-height=25
+width=23
+height=23
 number_of_agents=4
 max_num_cities=2
 seed=1
