@@ -44,3 +44,4 @@ arrival(ID,T) :- reached(ID,T), not reached_earlier(ID,T).
 #minimize { T@2,ID : arrival(ID,T) }.
 
 #show position/4.
+#show action/3.
