@@ -185,6 +185,37 @@ cost_fac(ID,CF) :- pow_cost_fac(ID,PCF),
                    CF = PCF * W.
 \end{verbatim}
 
+The trains' masses and  energy types are all set in the environment definition:
+\begin{verbatim}
+train(0).
+start(0,(7,6),24,w).
+end(0,(13,17),71).
+speed(0,1).
+pow_type(0, electro).
+weight(0,2).
+
+train(1).
+start(1,(12,17),21,e).
+end(1,(8,6),65).
+speed(1,1).
+pow_type(1, diesel).
+weight(1,4).
+
+train(2).
+start(2,(12,17),3,w).
+end(2,(8,6),94).
+speed(2,4).
+pow_type(2, hybrid).
+weight(2,3).
+
+train(3).
+start(3,(9,6),18,w).
+end(3,(13,17),65).
+speed(3,1).
+pow_type(3, hydrogen).
+weight(3,3).
+\end{verbatim}
+
 \paragraph{Energy Costs of Actions}
 Depending how fast the train moves or accelerates, it consumes different amounts of energy. These are reflected by the different \texttt{energy()} predicates:
 
@@ -394,6 +425,7 @@ For all trial runs a single environment was used. It consists of a 25 $\times$ 2
 
 The baseline encoding was only used to establish rules for bringing trains from a starting point to an end point with a proper behavior for a given environment. That goal was reached successfully: The baseline encoding successfully generated paths for all four agents from their starting point to their end points.
 
+Extending the baseline encoding with the rules and heuristics to model energy consumption and efficiency resulted in the encodings no longer working properly: 
 
 \section{Conclusion}
 
@@ -403,7 +435,7 @@ The baseline encoding was only used to establish rules for bringing trains from 
 
 \begin{table}[htbp]
   \centering
-  \caption{Paths taken by agent 0 in the baseline encoding}
+  \caption{Path taken by agent 0 in the baseline encoding}
   \label{tab:baseline0}
   \begin{tabular}{llllll}
     \toprule
@@ -468,8 +500,8 @@ The baseline encoding was only used to establish rules for bringing trains from 
 
 \begin{table}[htbp]
   \centering
-  \caption{Paths taken by agent 1 in the baseline encoding}
-  \label{tab:baseline0}
+  \caption{Path taken by agent 1 in the baseline encoding}
+  \label{tab:baseline1}
   \begin{tabular}{llllll}
     \toprule
     agent & timestep & position & direction & status & given\_command \\
@@ -529,8 +561,8 @@ The baseline encoding was only used to establish rules for bringing trains from 
 
 \begin{table}[htbp]
   \centering
-  \caption{Paths taken by agent 2 in the baseline encoding}
-  \label{tab:baseline0}
+  \caption{Path taken by agent 2 in the baseline encoding}
+  \label{tab:baseline2}
   \begin{tabular}{llllll}
     \toprule
     agent & timestep & position & direction & status & given\_command \\
@@ -561,8 +593,8 @@ The baseline encoding was only used to establish rules for bringing trains from 
 
 \begin{table}[htbp]
   \centering
-  \caption{Paths taken by agent 3 in the baseline encoding}
-  \label{tab:baseline0}
+  \caption{Path taken by agent 3 in the baseline encoding}
+  \label{tab:baseline3}
   \begin{tabular}{llllll}
     \toprule
     agent & timestep & position & direction & status & given\_command \\
@@ -620,5 +652,146 @@ The baseline encoding was only used to establish rules for bringing trains from 
 \end{table}
 
 \section{Tables for Energy Encoding}
+\begin{table}[htbp]
+  \centering
+  \caption{Path taken by agent 0 in the energy encoding}
+  \label{tab:energy0}
+  \begin{tabular}{lllllll}
+    \toprule
+    agent & timestep & position & direction & status & given\_command & energy \\
+    \midrule
+0 & 24 & None & w & ready to depart & move\_forward & 0 \\
+0 & 25 & (7, 6) & w & moving & move\_forward & 0 \\
+0 & 26 & (7, 5) & w & moving & move\_forward & 2 \\
+0 & 27 & (8, 5) & s & moving & move\_forward & 24 \\
+0 & 28 & (8, 4) & w & moving & move\_forward & 24 \\
+0 & 29 & (8, 3) & w & moving & move\_forward & 2 \\
+0 & 30 & (8, 2) & w & moving & move\_forward & 2 \\
+0 & 31 & (8, 1) & w & moving & move\_forward & 2 \\
+0 & 32 & (9, 1) & s & moving & move\_forward & 24 \\
+0 & 33 & (10, 1) & s & moving & move\_forward	 & 2 \\
+0 & 34 & (11, 1) & s & moving & move\_forward	 & 2 \\
+0 & 35 & (12, 1) & s & moving & move\_forward	 & 2 \\
+0 & 36 & (13, 1) & s & moving & move\_forward	 & 2 \\
+0 & 37 & (13, 2) & e & moving & move\_forward & 24 \\
+0 & 38 & (13, 3) & e & moving & move\_forward & 2 \\
+0 & 39 & (13, 4) & e & moving & move\_forward & 2 \\
+0 & 40 & (13, 5) & e & moving & move\_forward & 2 \\
+0 & 41 & (13, 6) & e & moving & move\_forward & 2 \\
+0 & 42 & (13, 7) & e & moving & move\_forward & 2 \\
+0 & 43 & (13, 8) & e & moving & move\_forward & 2 \\
+0 & 44 & (13, 9)	 & e & moving & move\_forward & 2 \\
+0 & 45 & (13, 10) & e & moving & move\_forward & 2 \\
+0 & 46 & (13, 11) & e	 & moving & move\_forward & 2 \\
+0 & 47 & (13, 12) & e	 & moving & move\_forward & 2 \\
+0 & 49 & (11, 12) & n	 & moving & move\_forward & 24 \\
+0 & 51 & (9, 12)	 & n & moving & move\_forward & 24 \\
+0 & 52 & (8, 12)	 & n & moving & move\_forward & 24 \\
+0 & 53 & (8, 11)	 & w & moving & move\_forward & 2 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
+\begin{table}[htbp]
+  \centering
+  \caption{Path taken by agent 1 in the energy encoding}
+  \label{tab:energy1}
+  \begin{tabular}{lllllll}
+    \toprule
+    agent & timestep & position & direction & status & given\_command & energy \\
+    \midrule
+1 & 21 & None & e & ready to depart & move\_forward & 0 \\
+1 & 22 & (12, 17) & e	 & moving & move\_forward & 0 \\
+1 & 23 & (12, 18) & e & moving & move\_forward & 12 \\
+1 & 24 & (12, 19) & e & moving & move\_forward & 12 \\
+1 & 25 & (12, 20) & e & moving & move\_forward & 12 \\
+1 & 26 & (12, 21) & e & moving & move\_forward & 12 \\
+1 & 27 & (12, 22) & e & moving & move\_forward & 12 \\
+1 & 28 & (11, 22) & n & moving & move\_forward & 144 \\
+1 & 29 & (10, 22) & n & moving & move\_forward & 12 \\
+1 & 30 & (9, 22)	 & n & moving & move\_forward & 12 \\
+1 & 31 & (8, 22)	 & n & moving & move\_forward & 12 \\
+1 & 32 & (7, 22)	 & n & moving & move\_forward & 12 \\
+1 & 33 & (7, 21)	 & w & moving & move\_forward & 144 \\
+1 & 34 & (7, 20)	 & w & moving & move\_forward & 12 \\
+1 & 35 & (7, 19)	 & w & moving & move\_forward & 12 \\
+1 & 36 & (7, 18)	 & w & moving & move\_forward & 12 \\
+1 & 37 & (7, 17)	 & w & moving & move\_forward & 12 \\
+1 & 38 & (7, 16)	 & w & moving & move\_forward & 12 \\
+1 & 39 & (7, 15)	 & w & moving & move\_forward & 12 \\
+1 & 40 & (7, 14)	 & w & moving & move\_forward & 12 \\
+1 & 41 & (7, 13)	 & w & moving & move\_forward & 12 \\
+1 & 43 & (7, 11)	 & w & moving & move\_forward & 144 \\
+1 & 44 & (8, 11)	 & s & moving & move\_forward	 & 144 \\
+1 & 45 & (9, 11)	 & s & moving & move\_forward	 & 12 \\
+1 & 46 & (10, 11) & s & moving & move\_forward & 12 \\
+1 & 47 & (10, 11) & s & stopped & move\_forward & 12 \\
+1 & 48 & (10, 11) & s & stopped & move\_forward & 12 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Path taken by agent 2 in the energy encoding}
+  \label{tab:energy2}
+  \begin{tabular}{lllllll}
+    \toprule
+    agent & timestep & position & direction & status & given\_command & energy \\
+    \midrule
+2 & 13 & None & w & ready to depart & move\_forward & 6 \\
+2 & 17 & (12, 17) & w & moving & move\_forward & 6 \\
+2 & 21 & (12, 16) & w & moving & move\_forward & 6 \\
+2 & 25 & (12, 15) & w & moving & move\_forward & 6 \\
+2 & 29 & (12, 14) & w & moving & move\_forward & 6 \\
+2 & 33 & (12, 13) & w & moving & move\_forward & 18 \\
+2 & 37 & (12, 12) & w & moving & move\_forward & 6 \\
+2 & 41 & (12, 11) & w & moving & move\_forward & 6 \\
+2 & 49 & (11, 11) & n & stopped & move\_forward & 18 \\
+2 & 53 & (11, 11) & n & stopped & move\_forward & 6 \\
+2 & 57 & (11, 11) & n & stopped & move\_forward & 6 \\
+2 & 61 & (11, 11) & n & stopped & move\_forward & 6 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Path taken by agent 3 in the energy encoding}
+  \label{tab:energy3}
+  \begin{tabular}{lllllll}
+    \toprule
+    agent & timestep & position & direction & status & given\_command & energy \\
+    \midrule
+3 & 18 & None & w & ready to depart & move\_forward & 0 \\
+3 & 19 & (9, 6) & w & moving & move\_forward & 0 \\
+3 & 20 & (9, 5) & w & moving & move\_forward & 12 \\
+3 & 21 & (9, 4) & w & moving & move\_forward & 12 \\
+3 & 22 & (9, 3) & w & moving & move\_forward & 12 \\
+3 & 23 & (8, 3) & n & moving & move\_forward & 144 \\
+3 & 24 & (8, 2) & w & moving & move\_forward & 144 \\
+3 & 25 & (8, 1) & w & moving & move\_forward & 12 \\
+3 & 26 & (9, 1) & s & moving & move\_forward & 144 \\
+3 & 27 & (10, 1) & s & moving & move\_forward & 12 \\
+3 & 28 & (11, 1) & s & moving & move\_forward & 12 \\
+3 & 29 & (12, 1) & s & moving & move\_forward & 12 \\
+3 & 30 & (13, 1) & s & moving & move\_forward & 12 \\
+3 & 31 & (13, 2) & e & moving & move\_forward & 144 \\
+3 & 32 & (13, 3) & e & moving & move\_forward & 12 \\
+3 & 33 & (13, 4) & e & moving & move\_forward & 12 \\
+3 & 34 & (13, 5) & e & moving & move\_forward & 12 \\
+3 & 35 & (13, 6) & e & moving & move\_forward & 12 \\
+3 & 36 & (13, 7) & e & moving & move\_forward & 12 \\
+3 & 37 & (13, 8) & e & moving & move\_forward & 12 \\
+3 & 38 & (13, 9) & e & moving & move\_forward & 12 \\
+3 & 39 & (13, 10) & e & moving & move\_forward & 12 \\
+3 & 40 & (13, 11) & e & moving & move\_forward & 12 \\
+3 & 41 & (13, 12) & e & moving & move\_forward & 12 \\
+3 & 43 & (11, 12) & n & moving & move\_forward & 144 \\
+3 & 45 & (9, 12) & n & moving & move\_forward & 144 \\
+3 & 46 & (8, 12) & n & moving & move\_forward & 144 \\
+3 & 47 & (8, 11) & w & moving & move\_forward & 12 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 \end{document}

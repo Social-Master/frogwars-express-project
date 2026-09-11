@@ -392,7 +392,7 @@ Calls        : 1
 Time         : 3021.327s (Solving: 2999.51s 1st Model: 0.42s Unsat: 2262.72s)
 CPU Time     : 2992.695s
 
-![Energy animation](../output/energy3/energy3_animation.gif)
+![Energy animation](../output/archive/energy3/energy3_animation.gif)
 
 ### 4. Energy + Acceleration Encoding
 
@@ -656,4 +656,4 @@ Calls        : 1
 Time         : 34.512s (Solving: 0.50s 1st Model: 0.50s Unsat: 0.00s)
 CPU Time     : 32.775s
 
-![Mixed animation](../output/mixed3/mixed3_animation.gif)
+![Mixed animation](../output/archive/mixed3/mixed3_animation.gif)
