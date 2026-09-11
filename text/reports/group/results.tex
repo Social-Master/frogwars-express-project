@@ -17,3 +17,24 @@ Extending the baseline encoding with the rules and heuristics to model energy co
   \caption{Trains crashing into each other using the energy encoding}
   \label{fig:traincrash}
 \end{figure}
+
+Looking at the energy values in the path finding logs reveals, that the local accounting of energy consumption operates in accordance with the theoretical modeling. 
+
+\paragraph{Elevated Energy Consumption when Turning}
+In physical rail operations, negotiating curves entails additional lateral forces, wheel flange friction, and curve resistance, resulting in a substantially higher instantaneous energy demand compared to straight cruising.
+
+This dynamic is accurately reflected in the experimental path logs (see tables \ref{tab:energy0}, \ref{tab:energy1}, \ref{tab:energy2}, and \ref{tab:energy3}):
+\begin{itemize}
+  \item \textbf{Straight Motion:} While maintaining a constant heading, agents only consume their base cost factor ($E = CF$). Agent~0 (electric, $CF = 2$) expends 2 units per step during straight traversal, whereas the heavier diesel and hydrogen units (Agents~1 and 3, $CF = 12$) consume 12 units per step.
+  \item \textbf{Turning Penalties:} Whenever an agent alters its orientation between successive positions ($Dir1 \neq Dir2$), the energy calculation rule $E = CF \cdot 12 / S$ is triggered. This leads to pronounced consumption peaks:
+    \begin{itemize}
+      \item For Agent~0 ($S = 1$), energy consumption spikes twelvefold from 2 to 24 units (e.g., timesteps 27, 28, and 32).
+      \item For Agents~1 and 3 ($S = 1$), turning actions incur a severe penalty of 144 units instead of 12 (e.g., Agent~1 at timesteps 28 and 33; Agent~3 at timesteps 23, 26, and 31).
+      \item For Agent~2, whose inverse speed is $S = 4$, the penalty scales inversely with speed to $E = 6 \cdot 12 / 4 = 18$ units (e.g., timestep 33), representing a threefold increase over its baseline of 6 units.
+    \end{itemize}
+\end{itemize}
+
+These observations confirm that the ASP encoding successfully differentiates between vehicle types, propulsion efficiencies, and kinematic states on an individual step level.
+
+\paragraph{Mass and Propulsion Scaling}
+The linear coupling of drive efficiency and vehicle weight ($CF = PCF \cdot W$) correctly scales the baseline energy footprint. Agent~0, representing the lightest configuration ($W = 2$, electric), operates at a minimal baseline of 2 units per step. In contrast, Agent~1, having the highest mass ($W = 4$, diesel), requires 12 units per step—a sixfold increase that accurately reflects the physical impact of vehicle mass and motor efficiency on running resistance.

@@ -326,7 +326,10 @@ When a train decides to wait, it loses its momentum. The encoding dictates that 
 temp_speed(ID,T2,4)  :- chosen(ID,T,wait,_,_,_,_,T2).
 
 % to be able to wait, you need to have speed 1/4
-reachable(ID,T,wait,X,Y,T+1,Dir) :- position(ID,(X,Y),T,Dir), time(T+1), temp_speed(ID,T,4).
+reachable(ID,T,wait,X,Y,T+1,Dir)
+:- position(ID,(X,Y),T,Dir),
+   time(T+1),
+   temp_speed(ID,T,4).
 \end{verbatim}
 
 \paragraph{Turning and Arrival Physics}
