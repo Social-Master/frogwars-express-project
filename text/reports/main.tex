@@ -425,7 +425,15 @@ For all trial runs a single environment was used. It consists of a 25 $\times$ 2
 
 The baseline encoding was only used to establish rules for bringing trains from a starting point to an end point with a proper behavior for a given environment. That goal was reached successfully: The baseline encoding successfully generated paths for all four agents from their starting point to their end points.
 
-Extending the baseline encoding with the rules and heuristics to model energy consumption and efficiency resulted in the encodings no longer working properly: 
+Extending the baseline encoding with the rules and heuristics to model energy consumption and efficiency resulted in the encodings no longer working properly: None of the trains reached their end points, and trains 1 and 2 even crashed into each other, such that they weren't able to move.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{traincrash.jpeg}
+  \caption{Trains crashing into each other using the energy encoding}
+  \label{fig:traincrash}
+\end{figure}
+
+
 
 \section{Conclusion}
 
