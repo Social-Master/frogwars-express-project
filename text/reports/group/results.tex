@@ -60,7 +60,13 @@ These observations confirm that the ASP encoding successfully differentiates bet
 The linear coupling of drive efficiency and vehicle weight ($CF = PCF \cdot W$) correctly scales the baseline energy footprint. Agent~0, representing the lightest configuration ($W = 2$, electric), operates at a minimal baseline of 2 units per step. In contrast, Agent~1, having the highest mass ($W = 4$, diesel), requires 12 units per step—a sixfold increase that accurately reflects the physical impact of vehicle mass and motor efficiency on running resistance.
 
 \paragraph{Braking Penalties}
-As mentioned in chapter 2.3, the energy encoding also specifies penalties when a train first enters the \texttt{wait} state, which models a train first hitting the brakes. While turning costs and vehicle weight scaling functioned as expected, the path finding logs reveal a significant divergence regarding this rule:
+As mentioned in chapter 2.3, the energy encoding also specifies penalties when a train first enters the \texttt{wait} state, which models a train first hitting the brakes. The path finding logs highlight two distinct behaviors regarding this rule:
 \begin{itemize}
-
+    \item \textbf{Avoidance During Transit:} Because braking incurs a massive energy penalty ($E = CF \cdot 24 / S$), the solver actively avoids scheduling \texttt{wait} actions once a train is in motion. By successfully leaning on the \texttt{\#minimize} directive for energy, the solver guarantees that trains maintain their momentum, completely eliminating unnecessary stops during their active routes.
+    \item \textbf{Initialization Boundary Condition:} An initialization artifact is visible at timestep 1 for all agents (see tables \ref{tab:energy0}--\ref{tab:energy3}). The encoding determines a new braking action by checking if an agent was already waiting in the previous timestep (\texttt{not prev\_wait(ID,T)}). At the absolute start of the simulation ($T=0$), the absence of a preceding timestep causes this condition to evaluate as true. Consequently, the model mathematically assesses the initial static state at the station as a braking maneuver, applying the strict formula. This correctly yields the expected theoretical penalty peaks: 48 units for Agent~0, 288 units for Agents~1 and 3, and 36 units for Agent~2. 
 \end{itemize}
+
+Ultimately, while the boundary condition at $T=0$ generates an initial offset, the encoding successfully forces the solver to prioritize continuous, momentum-preserving movement throughout the actual journey.
+
+\paragraph{Computational Complexity}
+While the encoding successfully navigated the multi-objective optimization, the introduction of energy mechanics heavily impacted solver efficiency. Establishing the optimal path for this $25 \times 25$ environment required 3021.327 seconds of computation time, with roughly 2999.51 seconds dedicated purely to solving. This exponential increase in search space complexity is driven by the \texttt{energy()} rules, which force the solver to evaluate highly granular kinematic constraints across extended time horizons.

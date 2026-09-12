@@ -1,1 +1,13 @@
 \section{Conclusion}
+In this project, we extended the railway scheduling problem within the Flatland framework by modeling energy consumption using Answer Set Programming (ASP). Our results demonstrate that the ASP encoding accurately captures physical realities at the local level: energy costs dynamically scale based on vehicle mass, power type, and specific kinematic states such as turning or braking. Furthermore, the application of lexicographical optimization effectively dictates solver behavior. By prioritizing arrival time over energy efficiency, the solver strictly avoids costly braking maneuvers to maintain momentum, ultimately producing paths identical to the baseline while optimizing transit continuity.
+
+However, our current ASP encoding exhibits limitations regarding computational scalability. The introduction of complex energy penalties expands the search space significantly, particularly because the solver must evaluate numerous kinematic combinations across extended time horizons.
+
+We consider several extensions and modifications for future work based on our findings:
+\begin{itemize}
+    \item \textbf{Alternative Optimization Strategies:} Adjusting or combining the \texttt{\#minimize} directives—such as applying a mathematical scaling factor to unify time and energy costs—could allow the solver to actively evaluate and choose longer, more energy-efficient detours rather than strictly defaulting to the fastest geometric route.
+    \item \textbf{Algorithmic Improvements:} To manage the exponential growth of the search space on larger grids, future research could employ incremental solving techniques. Progressively extending the planning horizon could help approximate optimal energy solutions more efficiently without grounding the entire time horizon at once.
+    \item \textbf{Acceleration and Kinematics:} While this model utilizes constant inverse speeds, future iterations could incorporate dynamic acceleration mechanics, adding a layer of realism to how trains gather momentum after stops or decelerate before sharp turns.
+\end{itemize}
+
+Overall, we provide a robust proof of concept that ASP can effectively model and optimize deep physical constraints in railway logistics, laying the groundwork for future research into multi-objective routing.
