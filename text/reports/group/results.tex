@@ -1,6 +1,34 @@
-\clearpage
 \subsection{Results}
-For all trial runs a single environment was used. It consists of a 25 $\times$ 25 network with two stations and four agents. Three of the agents move at the speed of 1, the remaining one at speed 4.
+For all trial runs a single environment was used. It consists of a 25 $\times$ 25 network with two stations and the following four agents:
+\begin{verbatim}
+train(0).
+start(0,(7,6),24,w).
+end(0,(13,17),71).
+speed(0,1).
+pow_type(0, electro).
+weight(0,2).
+
+train(1).
+start(1,(12,17),21,e).
+end(1,(8,6),65).
+speed(1,1).
+pow_type(1, diesel).
+weight(1,4).
+
+train(2).
+start(2,(12,17),3,w).
+end(2,(8,6),94).
+speed(2,4).
+pow_type(2, hybrid).
+weight(2,3).
+
+train(3).
+start(3,(9,6),18,w).
+end(3,(13,17),65).
+speed(3,1).
+pow_type(3, hydrogen).
+weight(3,3).
+\end{verbatim}
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{./images/environment.png}
@@ -9,14 +37,6 @@ For all trial runs a single environment was used. It consists of a 25 $\times$ 2
 \end{figure}
 
 The baseline encoding was only used to establish rules for bringing trains from a starting point to an end point with a proper behavior for a given environment. That goal was reached successfully: The baseline encoding successfully generated paths for all four agents from their starting point to their end points (see tables \ref{tab:baseline0}, \ref{tab:baseline1}, \ref{tab:baseline2} and \ref{tab:baseline3}).
-
-Extending the baseline encoding with the rules and heuristics to model energy consumption and efficiency resulted in the encodings no longer working properly: None of the trains reached their end points, and trains 1 and 2 even ended up on the same track traveling in opposite directions, such that they were not able to continue on (see tables \ref{tab:energy0}, \ref{tab:energy1}, \ref{tab:energy2} and \ref{tab:energy3}).
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{./images/traincrash.jpeg}
-  \caption{Trains crashing into each other using the energy encoding}
-  \label{fig:traincrash}
-\end{figure}
 
 Looking at the energy values in the path finding logs reveals, that the local accounting of energy consumption operates in accordance with the theoretical modeling. 
 
@@ -38,3 +58,9 @@ These observations confirm that the ASP encoding successfully differentiates bet
 
 \paragraph{Mass and Propulsion Scaling}
 The linear coupling of drive efficiency and vehicle weight ($CF = PCF \cdot W$) correctly scales the baseline energy footprint. Agent~0, representing the lightest configuration ($W = 2$, electric), operates at a minimal baseline of 2 units per step. In contrast, Agent~1, having the highest mass ($W = 4$, diesel), requires 12 units per step—a sixfold increase that accurately reflects the physical impact of vehicle mass and motor efficiency on running resistance.
+
+\paragraph{Braking Penalties}
+As mentioned in chapter 2.3, the energy encoding also specifies penalties when a train first enters the \texttt{wait} state, which models a train first hitting the brakes. While turning costs and vehicle weight scaling functioned as expected, the path finding logs reveal a significant divergence regarding this rule:
+\begin{itemize}
+
+\end{itemize}
