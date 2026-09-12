@@ -1,5 +1,8 @@
 \documentclass{beamer}
 
+\usepackage{graphicx}
+\usepackage{float}
+
 %Information to be included in the title page:
 \title{Energy Efficiency in Railway Scheduling}
 \author{Paul Tennigkeit, Georgi Abshilava}
@@ -24,7 +27,141 @@
 \section{Baseline ASP Model}
 \begin{frame}
 \frametitle{Baseline ASP Model}
+\begin{itemize}
+  \item Establishes rules to handle essential train behavior
+  \begin{itemize}
+    \item Directions
+    \item Movements
+    \item Transitions
+    \item Collision and Reachability Constraints
+    \item Schedule Optimization
+  \end{itemize}
+\end{itemize}
+\end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Directions and Movements}
+  \begin{verbatim}
+% Directions
+dir(s).
+dir(n).
+dir(w).
+dir(e).
+  
+% Movement Operation
+moving(move_forward).
+moving(move_left).
+moving(move_right).
+  
+% Movement on Grid
+delta(A,s,1,0)  :- moving(A).
+delta(A,n,-1,0) :- moving(A).
+delta(A,e,0,1)  :- moving(A).
+delta(A,w,0,-1) :- moving(A).
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Transitions}
+  \begin{verbatim}
+% Transition facts: To represent different track types
+% ID : track ID
+% Dir1: pointing direction of agent
+% Act : associated action with movement towards exit
+% Dir2: exit direction
+transition(ID, Dir1, Act, Dir2).
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Collision Constraints}
+  \begin{verbatim}
+% Trains can not occupy the same cell at the same time
+:- stay(ID1,X,Y,T),
+   stay(ID2,X,Y,T),
+   ID1 < ID2.
+
+% Trains can not swap their position
+:- stay(ID1,X1,Y1,T),
+   stay(ID2,X2,Y2,T),
+   stay(ID1,X2,Y2,T+1),
+   stay(ID2,X1,Y1,T+1),
+   ID1 < ID2.
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Reachability Constraints}
+  \begin{verbatim}
+% define states (cell, time, direction),
+% which are reachable by a train 
+reachable(ID,T,A,X2,Y2,T2,Dir2) :-
+                            A != wait,
+                            position(ID,(X,Y),T,Dir1),
+                            cell((X,Y),Cell),
+                            transition(Cell,Dir1,A,Dir2),
+                            delta(A,Dir2,DX,DY),
+                            X2 = X + DX,
+                            Y2 = Y + DY,
+                            speed(ID,S),
+                            T2 = T + S,
+                            time(T2).
+reachable(ID,T,wait,X,Y,T+1,Dir) :-
+                            position(ID,(X,Y),T,Dir),
+                            time(T+1).
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Reachability Constraints}
+  \begin{verbatim}
+% Choose exactly one valid transition at each time step
+1 { position(ID,(X2,Y2),T2,Dir2)
+    : reachable(ID,T,A,X2,Y2,T2,Dir2)
+} 1 :- position(ID,(_,_),T,_),
+       not reached(ID,T).
+       
+% Track the time interval a train spends inside a cell.
+% This is to make enforcing collision constraints easier.
+chosen(ID,T,A,X,Y,X2,Y2,T2) :-
+                       position(ID,(X,Y),T,_),
+                       position(ID,(X2,Y2),T2,_),
+                       reachable(ID,T,A,X2,Y2,T2,_).
+                       
+% a train reached its target if their position matches 
+reached(ID,T) :- position(ID,(X,Y),T,_),
+                 end(ID,(X,Y),_).
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Schedule Optimization}
+\begin{verbatim}
+% stop searching if train is not
+% in time to reach its target anymore
+:- position(ID,(X,Y),T,_),
+   end(ID,(EX,EY),Arr),
+   speed(ID,InvSpd),
+   T + (|X-EX| + |Y-EY|)*InvSpd > Arr.
+   
+% the arrival times should be minimized
+reached_earlier(ID,T) :- reached(ID,T),
+                         reached(ID,T0), T0 < T.
+arrival(ID,T) :- reached(ID,T),
+                 not reached_earlier(ID,T).
+
+% minimize summed arrival times
+#minimize { T@2,ID : arrival(ID,T) }.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{baseline3_animation-38.jpeg}
+  \caption{Baseline Encoding in Action (at timestep 37)}
+  \label{fig:environment_image}
+\end{figure}
 \end{frame}
 
 \section{Motivation for Energy Optimization}
