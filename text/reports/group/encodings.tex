@@ -256,7 +256,7 @@ Realistic physics dictate that trains must decelerate before taking sharp turns 
 \end{verbatim}
 
 \paragraph{Solver Heuristics}
-To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly.
+To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly. These heuristics make finding the solution around four times faster within our example environment (see figure \ref{fig:environment_image}), decreasing the computation time from 3072.10 seconds to 845.88 seconds:.
 
 \begin{verbatim}
 % prefer to not wait
@@ -297,10 +297,12 @@ cost_fac(ID,CF) :- pow_cost_fac(ID,PCF),
 The trains' masses and energy types are all set in the environment definition.
 
 \paragraph{Energy Costs of Actions}
-Depending how fast the train moves and what it does, it consumes different amounts of energy. These are reflected by the different \texttt{energy()} predicates:
-
-\begin{verbatim}
-% Cost of coasting
+Depending how fast the train moves and what it does, it consumes different amounts of energy. In the encoding, energy is deivided into three distinct kinematic states:
+\begin{itemize}
+  \item \textbf{Moving Straight:} The energy consumed while moving forward is proportional to the square of the train's speed. The encoding calculates this using the formula $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2$. The multiplier of 100 is explicitly introduced to prevent precision loss from unnecessary rounding during the solver's integer calculations.
+  
+  \begin{verbatim}
+% Cost of moving straight
 energy(ID,T2,E) :- action(train(ID),A,T),
                    A != wait,
                    position(ID,_,T,Dir),
@@ -309,8 +311,13 @@ energy(ID,T2,E) :- action(train(ID),A,T),
                    position(ID,_,T2,Dir),
                    cost_fac(ID,CF),
                    E = 100 * CF * 1/S * 1/S.
+  \end{verbatim}
+  \item \textbf{Turning:} When an agent navigates a curve, centrifugal forces demand additional work. This is modeled by applying a 10\% penalty to the base straight-line movement cost, resulting in the calculation $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2 \cdot \frac{11}{10}$.
+  \begin{verbatim}
 
-% Cost of braking
+
+% To simulate regenerative braking capabilities,
+% the "costs" of braking are actually gains in this case
 prev_wait(ID,T) :- action(train(ID),_,T),
                    time(T-1),
                    action(train(ID),wait,T-1).
@@ -319,7 +326,9 @@ energy(ID,T+1,E) :- action(train(ID),wait,T),
                     not prev_wait(ID,T),
                     cost_fac(ID,CF),
                     E = -1 * 100 * 4/10 * CF * 1/4 * 1/4.
-
+  \end{verbatim}
+  \item \textbf{Braking:} To simulate modern regenerative braking capabilities, agents actually recover energy when coming to a halt. The encoding models this as a 40\% energy return based on the base speed squared, represented by the formula $E = -1 \cdot 100 \cdot \frac{4}{10} \cdot CF \cdot \left(\frac{1}{4}\right)^2$.
+  \begin{verbatim}
 % Cost of turning
 energy(ID,T2,E) :- position(ID,_,T,Dir1),
                    temp_speed(ID,T,S),
@@ -328,8 +337,8 @@ energy(ID,T2,E) :- position(ID,_,T,Dir1),
                    Dir1 != Dir2,
                    cost_fac(ID,CF),
                    E = 100 * CF * 1/S * 1/S  * 11/10.
-
-\end{verbatim}
+  \end{verbatim}
+\end{itemize}
 
 \paragraph{Removal of Acceleration Heuristics}
-As the heuristics increased the time of finding a solution, we decided to remove them in the energy encoding.
+As the heuristics increased the time of finding a solution, from 950.83 seconds up to 2600 seconds depending on which heuristic was active, we decided to remove them in the energy encoding.

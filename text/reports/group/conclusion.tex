@@ -1,5 +1,5 @@
 \section{Conclusion}
-In this project, we extended the railway scheduling problem within the Flatland framework by modeling energy consumption using Answer Set Programming (ASP). Our results demonstrate that the ASP encoding accurately captures physical realities at the local level: energy costs dynamically scale based on vehicle mass, power type, and specific kinematic states such as turning or braking. Furthermore, the application of lexicographical optimization effectively dictates solver behavior. By prioritizing arrival time over energy efficiency, the solver strictly avoids costly braking maneuvers to maintain momentum, ultimately producing paths identical to the baseline while optimizing transit continuity.
+In this project, we extended the railway scheduling problem within the Flatland framework by modeling energy consumption using Answer Set Programming (ASP). Our results demonstrate that the ASP encoding accurately captures physical realities at the local level: energy costs dynamically scale based on vehicle mass, power type, and specific kinematic states.
 
 However, our current ASP encoding exhibits limitations regarding computational scalability. The introduction of complex energy penalties expands the search space significantly, particularly because the solver must evaluate numerous kinematic combinations across extended time horizons.
 

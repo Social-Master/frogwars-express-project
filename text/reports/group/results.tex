@@ -1,72 +1,35 @@
 \subsection{Results}
-For all trial runs a single environment was used. It consists of a 25 $\times$ 25 network with two stations and the following four agents:
+For all trial runs a single environment was used. It consists of a 15 $\times$ 25 network with two stations and the following two agents:
 \begin{verbatim}
 train(0).
-start(0,(7,6),24,w).
-end(0,(13,17),71).
+start(0,(6,19),0,w).
+end(0,(10,5),63).
 speed(0,1).
 pow_type(0, electro).
 weight(0,2).
 
 train(1).
-start(1,(12,17),21,e).
-end(1,(8,6),65).
+start(1,(9,5),0,e).
+end(1,(7,19),63).
 speed(1,1).
 pow_type(1, diesel).
-weight(1,4).
+weight(1,1).
 
-train(2).
-start(2,(12,17),3,w).
-end(2,(8,6),94).
-speed(2,4).
-pow_type(2, hybrid).
-weight(2,3).
-
-train(3).
-start(3,(9,6),18,w).
-end(3,(13,17),65).
-speed(3,1).
-pow_type(3, hydrogen).
-weight(3,3).
 \end{verbatim}
-\begin{figure}[H]
+\begin{figure}[htbp]
   \centering
   \includegraphics[width=0.8\textwidth]{./images/environment.png}
   \caption{Flatland environment used for all experiments}
   \label{fig:environment_image}
 \end{figure}
 
-The baseline encoding was only used to establish rules for bringing trains from a starting point to an end point with a proper behavior for a given environment. That goal was reached successfully: The baseline encoding successfully generated paths for all four agents from their starting point to their end points (see tables \ref{tab:baseline0}, \ref{tab:baseline1}, \ref{tab:baseline2} and \ref{tab:baseline3}).
 
-Looking at the energy values in the path finding logs reveals, that the local accounting of energy consumption operates in accordance with the theoretical modeling. 
+The baseline encoding was only used to establish rules for bringing trains from a starting point to an end point with a proper behavior for a given environment. That goal was reached successfully: The baseline encoding successfully generated paths for all two agents from their starting point to their end points (see tables \ref{tab:baseline0} and \ref{tab:baseline1}) in a reasonable time frame of 16.029 seconds.
 
-\paragraph{Elevated Energy Consumption when Turning}
-In physical rail operations, negotiating curves entails additional lateral forces, wheel flange friction, and curve resistance, resulting in a substantially higher instantaneous energy demand compared to straight cruising.
+With the baseline routing established, we can analyze how the physical constraints of the energy encoding influence the trains' behavior. 
 
-This dynamic is accurately reflected in the experimental path logs (see tables \ref{tab:energy0}, \ref{tab:energy1}, \ref{tab:energy2}, and \ref{tab:energy3}):
-\begin{itemize}
-  \item \textbf{Straight Motion:} While maintaining a constant heading, agents only consume their base cost factor ($E = CF$). Agent~0 (electric, $CF = 2$) expends 2 units per step during straight traversal, whereas the heavier diesel and hydrogen units (Agents~1 and 3, $CF = 12$) consume 12 units per step.
-  \item \textbf{Turning Penalties:} Whenever an agent alters its orientation between successive positions ($Dir1 \neq Dir2$), the energy calculation rule $E = CF \cdot 12 / S$ is triggered. This leads to pronounced consumption peaks:
-    \begin{itemize}
-      \item For Agent~0 ($S = 1$), energy consumption spikes twelvefold from 2 to 24 units (e.g., timesteps 27, 28, and 32).
-      \item For Agents~1 and 3 ($S = 1$), turning actions incur a severe penalty of 144 units instead of 12 (e.g., Agent~1 at timesteps 28 and 33; Agent~3 at timesteps 23, 26, and 31).
-      \item For Agent~2, whose inverse speed is $S = 4$, the penalty scales inversely with speed to $E = 6 \cdot 12 / 4 = 18$ units (e.g., timestep 33), representing a threefold increase over its baseline of 6 units.
-    \end{itemize}
-\end{itemize}
+Train 0, defined as an electric train with a weight of 2, shows a significant acceleration on straight tracks. On straight tracks it reaches its maximum inverse speed of 1, which impacts its power consumption according to the squared speed formula. This causes energy spikes of 200 units per timestep. However, the solver strictly follows the turning constraints, forcing train 0 to slow down to an inverse speed of 3 before turning, such as the right turn at timestep 13 (see table \ref{tab:energy0}).
 
-These observations confirm that the ASP encoding successfully differentiates between vehicle types, propulsion efficiencies, and kinematic states on an individual step level.
+Train 1 is modeled as a diesel train with a weight of 1. This train's route showcases the regenerative braking capabilities defined in the encoding: When train 1 departs from a waiting state, it successfully regains a small amount of energy, logged as -7 units, at multiple intervals. It reaches its top inverse speed of 2, where its energy consumption peaks at 75 units on straight tracks (see table \ref{tab:energy1}).
 
-\paragraph{Mass and Propulsion Scaling}
-The linear coupling of drive efficiency and vehicle weight ($CF = PCF \cdot W$) correctly scales the baseline energy footprint. Agent~0, representing the lightest configuration ($W = 2$, electric), operates at a minimal baseline of 2 units per step. In contrast, Agent~1, having the highest mass ($W = 4$, diesel), requires 12 units per step—a sixfold increase that accurately reflects the physical impact of vehicle mass and motor efficiency on running resistance.
-
-\paragraph{Braking Penalties}
-As mentioned in chapter 2.3, the energy encoding also specifies penalties when a train first enters the \texttt{wait} state, which models a train first hitting the brakes. The path finding logs highlight two distinct behaviors regarding this rule:
-\begin{itemize}
-    \item \textbf{Avoidance During Transit:} Because braking incurs a massive energy penalty ($E = CF \cdot 24 / S$), the solver actively avoids scheduling \texttt{wait} actions once a train is in motion. By successfully leaning on the \texttt{\#minimize} directive for energy, the solver guarantees that trains maintain their momentum, completely eliminating unnecessary stops during their active routes.
-    \item \textbf{Initialization Boundary Condition:} An initialization artifact is visible at timestep 1 for all agents (see tables \ref{tab:energy0}--\ref{tab:energy3}). The encoding determines a new braking action by checking if an agent was already waiting in the previous timestep (\texttt{not prev\_wait(ID,T)}). At the absolute start of the simulation ($T=0$), the absence of a preceding timestep causes this condition to evaluate as true. Consequently, the model mathematically assesses the initial static state at the station as a braking maneuver, applying the strict formula. This correctly yields the expected theoretical penalty peaks: 48 units for Agent~0, 288 units for Agents~1 and 3, and 36 units for Agent~2. 
-\end{itemize}
-
-Ultimately, while the boundary condition at $T=0$ generates an initial offset, the encoding successfully forces the solver to prioritize continuous, momentum-preserving movement throughout the actual journey.
-
-\paragraph{Computational Complexity}
-While the encoding successfully navigated the multi-objective optimization, the introduction of energy mechanics heavily impacted solver efficiency. Establishing the optimal path for this $25 \times 25$ environment required 3021.327 seconds of computation time, with roughly 2999.51 seconds dedicated purely to solving. This exponential increase in search space complexity is driven by the \texttt{energy()} rules, which force the solver to evaluate highly granular kinematic constraints across extended time horizons.
+The energy encoding managed to find a solution in 702.315 seconds, which is around 12 minutes. For this relatively small environment and two agents, this is unreasonable.
