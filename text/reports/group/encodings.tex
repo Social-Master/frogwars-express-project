@@ -300,44 +300,36 @@ The trains' masses and energy types are all set in the environment definition.
 Depending how fast the train moves and what it does, it consumes different amounts of energy. These are reflected by the different \texttt{energy()} predicates:
 
 \begin{verbatim}
-% This rule calculates the energy cost of waiting,
-% which is CF * 24 / S. The penalty is only applied 
-% once, when the train first hits the brakes.
-% This behavior is reflected by the rule
-% not prev_wait(ID,T).
-energy(ID,T+1,E) :- action(train(ID),wait,T),
-                    speed(ID,S),
-                    not prev_wait(ID,T),
-                    cost_fac(ID,CF),
-                    E = CF * 24 / S.
-
-% This rule calculates the energy cost of moving
-% straight. This action's cost is only the base CF.
+% Cost of coasting
 energy(ID,T2,E) :- action(train(ID),A,T),
                    A != wait,
                    position(ID,_,T,Dir),
-                   speed(ID,S),
+                   temp_speed(ID,T,S),
                    T2 = T + S,
                    position(ID,_,T2,Dir),
                    cost_fac(ID,CF),
-                   E = CF .
+                   E = 100 * CF * 1/S * 1/S.
 
-% This rule calculates the energy cost of turning.
+% Cost of braking
+prev_wait(ID,T) :- action(train(ID),_,T),
+                   time(T-1),
+                   action(train(ID),wait,T-1).
+                   
+energy(ID,T+1,E) :- action(train(ID),wait,T),
+                    not prev_wait(ID,T),
+                    cost_fac(ID,CF),
+                    E = -1 * 100 * 4/10 * CF * 1/4 * 1/4.
+
+% Cost of turning
 energy(ID,T2,E) :- position(ID,_,T,Dir1),
-                   speed(ID,S),
+                   temp_speed(ID,T,S),
                    T2 = T + S,
                    position(ID,_,T2,Dir2),
                    Dir1 != Dir2,
                    cost_fac(ID,CF),
-                   E = CF * 12 / S.
-                   
-% The prev_wait() rule is required in order to make sure,
-% the agent is not constantly penalized for waiting in
-% every time step.
-prev_wait(ID,T) :- action(train(ID),_,T), 
-                   time(T-1),
-                   action(train(ID),wait,T-1).
+                   E = 100 * CF * 1/S * 1/S  * 11/10.
+
 \end{verbatim}
 
-\paragraph{Optimizing the Energy Encoding}
-The energy encoding adds the rule \texttt{\#minimize \{ E@1,ID,T : energy(ID,T,E) \}.} to also optimize fuel efficiency. As it is assigned the weight \texttt{@1}, the solver optimizes for arrival time first, which is assigned \texttt{@2}. Fuel efficiency is then optimized within the bounds of the best possible arrival times. 
+\paragraph{Removal of Acceleration Heuristics}
+As the heuristics increased the time of finding a solution, we decided to remove them in the energy encoding.
