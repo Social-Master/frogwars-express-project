@@ -2,6 +2,13 @@
 
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{xcolor}
+
+% Colors of baseline agents
+\definecolor{color_base0}{RGB}{203, 4, 2}
+\definecolor{color_base1}{RGB}{188, 28, 98}
+\definecolor{color_base2}{RGB}{163, 5, 245}
+\definecolor{color_base3}{RGB}{83, 21, 182}
 
 %Information to be included in the title page:
 \title{Energy Efficiency in Railway Scheduling}
@@ -159,7 +166,7 @@ arrival(ID,T) :- reached(ID,T),
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.6\textwidth]{images/baseline3_animation-38.jpeg}
-  \caption{Baseline Encoding in Action (at timestep 37)}
+  \caption{Baseline Encoding in Action (at timestep 37) with \textcolor{color_base0}{train 0}, \textcolor{color_base1}{train 1}, \textcolor{color_base2}{train 2} and \textcolor{color_base3}{train 3}}
   \label{fig:environment_image}
 \end{figure}
 \end{frame}

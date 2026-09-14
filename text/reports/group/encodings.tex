@@ -150,8 +150,133 @@ The \texttt{\#minimize} statement aggregates the arrival times of all agents and
 #minimize { T@2, ID : arrival(ID,T) }.
 \end{verbatim}
 
+\subsection{Acceleration Mechanics}
+To model energy consumption realistically, we introduce acceleration mechanics.
+
+\paragraph{Maximum and Initial Speeds}
+The environment created for the experiments also defined the trains' speeds in form of \texttt{speed()} predicates, which is actually interpreted as an inverse speed (e.g. a \texttt{speed} of 4 actually means, that a train would be 25\% slower). To model acceleration, \texttt{speed()} is reinterpreted as \texttt{max\_speed()}.
+
+\begin{verbatim}
+% interpret given train speeds as maximum speeds
+max_speed(ID,S) :- speed(ID,S).
+\end{verbatim}
+
+As a train starts moving, it initially has a speed of 0.25.
+
+\begin{verbatim}
+% trains start with a speed of 1/4 
+temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
+\end{verbatim}
+
+\paragraph{Dynamic Speed Change}
+The \texttt{temp\_speed()} choice rules allow gradual speed changes while strictly respecting a train's physical limits. During each position change, a train can alter its inverse speed by a maximum of one step at a time.
+
+\begin{verbatim}
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 <= 4.
+\end{verbatim}
+
+To account for the upper and lower bounds of a train's speed capabilities, three additional choice rules handle edge cases: when a train is at its maximum speed, when it is at its minimum speed, or when both conditions apply simultaneously. In the later case, trains are forced to maintain their current speed.
+
+\begin{verbatim}
+% Lower bound
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 > 4.
+
+% Upper bound
+1{
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 < MS,
+   S+1 <= 4.
+
+% In between
+temp_speed(ID,T2,S)
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 < MS,
+   S+1 > 4.
+\end{verbatim}
+
+\paragraph{Post-Wait Acceleration}
+When a train decides to wait, it loses its momentum. The encoding dictates that after taking a \texttt{wait} action, a train must resume movement at the lowest possible speed:
+
+\begin{verbatim}
+% after waiting, you have to start with speed 1/4
+temp_speed(ID,T2,4)  :- chosen(ID,T,wait,_,_,_,_,T2).
+
+% to be able to wait, you need to have speed 1/4
+reachable(ID,T,wait,X,Y,T+1,Dir)
+:- position(ID,(X,Y),T,Dir),
+   time(T+1),
+   temp_speed(ID,T,4).
+\end{verbatim}
+
+\paragraph{Turning and Arrival Physics}
+Realistic physics dictate that trains must decelerate before taking sharp turns or arriving at their destination. The model enforces that a train cannot take a turn at high speeds; it must slow down to an inverse speed of at least 3. Similarly, it must fully decelerate to an inverse speed of 4 upon reaching its final target.
+
+\begin{verbatim}
+% you have to take a turn with inverse speed >= 3 
+:- position(ID,_,T,Dir1),
+   temp_speed(ID,T,S),
+   T2 = T + S,
+   position(ID,_,T2,Dir2),
+   Dir1 != Dir2,
+   S < 3.
+
+% you can only arrive at your goal if your inverse speed was 4 before
+:- reached(ID,T2),
+   temp_speed(ID,T1,S),
+   T2 = T1 + S,
+   S < 4.
+\end{verbatim}
+
+\paragraph{Solver Heuristics}
+To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly.
+
+\begin{verbatim}
+% prefer to not wait
+wait_position(ID,X2,Y2,T2,Dir2) 
+:- reachable(ID,T,wait,X2,Y2,T2,Dir2).
+
+#heuristic position(ID,(X2,Y2),T2,Dir2)
+           : wait_position(ID,X2,Y2,T2,Dir2). [-50,1]
+
+% schedule trains one by one
+#heuristic position(ID,(X,Y),T,Dir)
+           : start(ID,_,Dep,_). [-Dep,1]
+
+% prefer getting faster
+#heuristic temp_speed(ID,T,S)
+           : position(ID,_,T,_). [-S,1]
+\end{verbatim}
+
 \subsection{Energy Encoding Mechanics}
-The energy efficiency encoding (train\_encoding\_energy.lp) adds new rules to represent the concept of energy and how different actions of the agents affect their usage and consumption of energy.
+The energy efficiency encoding adds new rules to represent the concept of energy and how different actions of the agents affect their usage and consumption of energy.
 
 \paragraph{Cost Factors}
 In real life, trains use a variety of motors that rely on different sources of energy, such as electric, hybrid, diesel or hydrogen power, which fundamentally affects how efficiently energy is consumed. The \texttt{pow\_cost\_fac()} predicate represents this baseline efficiency in the encoding by assigning an integer multiplier to each train based on its power type.
@@ -169,36 +294,7 @@ cost_fac(ID,CF) :- pow_cost_fac(ID,PCF),
                    CF = PCF * W.
 \end{verbatim}
 
-The trains' masses and  energy types are all set in the environment definition:
-\begin{verbatim}
-train(0).
-start(0,(7,6),24,w).
-end(0,(13,17),71).
-speed(0,1).
-pow_type(0, electro).
-weight(0,2).
-
-train(1).
-start(1,(12,17),21,e).
-end(1,(8,6),65).
-speed(1,1).
-pow_type(1, diesel).
-weight(1,4).
-
-train(2).
-start(2,(12,17),3,w).
-end(2,(8,6),94).
-speed(2,4).
-pow_type(2, hybrid).
-weight(2,3).
-
-train(3).
-start(3,(9,6),18,w).
-end(3,(13,17),65).
-speed(3,1).
-pow_type(3, hydrogen).
-weight(3,3).
-\end{verbatim}
+The trains' masses and energy types are all set in the environment definition.
 
 \paragraph{Energy Costs of Actions}
 Depending how fast the train moves and what it does, it consumes different amounts of energy. These are reflected by the different \texttt{energy()} predicates:
