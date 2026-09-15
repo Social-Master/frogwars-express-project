@@ -1,9 +1,9 @@
 \section{Encoding Energy Efficiency in ASP}
-\subsection{What is Flatland?}
+\subsection{What is Flatland?}\label{subs:what}
 Flatland is a framework for simulating railway networks. A Flatland environment consists of a two dimensional plane made up of different types of cells, some of which containing different types of interconnected tracks, and agents moving around on them from a starting point to an end point. Agents have an earliest departure and arrival time, and a pre-defined speed, represented by an inverse value. To limit the time of the simulation, a global time frame is set.
 
 \subsection{Baseline Encoding}
-The baseline ASP encoding (train\_encoding.lp) handles all essential train and environment behavior, including defining legal transitions and movements, possible directions, and actions.
+The baseline ASP encoding handles all essential train and environment behavior, including defining legal transitions and movements, possible directions, and actions.
 
 \paragraph{Directions}
 There are four possible directions agents can go and point towards: North, south, east and west. Each is defined as a fact:
@@ -134,7 +134,7 @@ To ensure valid and bounded schedules, a look-ahead integrity constraint termina
 By evaluating the remaining Manhattan distance multiplied by the train's inverse speed directly against its scheduled deadline, this single rule simultaneously prevents late arrivals and prunes unviable paths early in the search space.
 
 \paragraph{Schedule Optimization}
-Once valid routing pathways are established, the solver optimizes the schedule by minimizing overall transit delays. To ensure that trains are evaluated solely on their actual transit time rather than time spent idling at their destination after completion, the encoding isolates the precise time step $T$ at which a train first reaches its end coordinates:
+Once valid routing pathways are established, the solver optimizes the schedule by minimizing overall transit delays. To ensure that trains are evaluated only on their actual transit time instead of the time spent idling at their destination after completion, the encoding isolates the exact time step $T$ at which a train first reaches its end coordinates:
 \begin{verbatim}
 % the arrival times should be minimized
 reached_earlier(ID,T) :- reached(ID,T),
@@ -151,10 +151,10 @@ The \texttt{\#minimize} statement aggregates the arrival times of all agents and
 \end{verbatim}
 
 \subsection{Acceleration Mechanics}
-To model energy consumption realistically, we introduce acceleration mechanics.
+To model energy consumption realistically, we add acceleration mechanics to the baseline encoding.
 
 \paragraph{Maximum and Initial Speeds}
-The environment created for the experiments also defined the trains' speeds in form of \texttt{speed()} predicates, which is actually interpreted as an inverse speed (e.g. a \texttt{speed} of 4 actually means, that a train would be 25\% slower). To model acceleration, \texttt{speed()} is reinterpreted as \texttt{max\_speed()}.
+The environment created for the experiments also defines the trains' speeds in form of \texttt{speed()} predicates, which, as mentioned in chapter \ref{subs:what}, is interpreted as an inverse speed (e.g. a \texttt{speed} of 4 actually means, that a train would be 25\% slower). To model acceleration, \texttt{speed()} is reinterpreted as \texttt{max\_speed()}.
 
 \begin{verbatim}
 % interpret given train speeds as maximum speeds
@@ -237,8 +237,7 @@ reachable(ID,T,wait,X,Y,T+1,Dir)
 \end{verbatim}
 
 \paragraph{Turning and Arrival Physics}
-Realistic physics dictate that trains must decelerate before taking sharp turns or arriving at their destination. The model enforces that a train cannot take a turn at high speeds; it must slow down to an inverse speed of at least 3. Similarly, it must fully decelerate to an inverse speed of 4 upon reaching its final target.
-
+In real life, trains must decelerate before taking sharp turns or when pulling into a station. This rule enforces, that a train cannot take a turn at high speeds; it must slow down to an inverse speed of at least 3. Similarly, it must fully slow down to an inverse speed of 4 upon reaching its final target.
 \begin{verbatim}
 % you have to take a turn with inverse speed >= 3 
 :- position(ID,_,T,Dir1),
@@ -256,7 +255,7 @@ Realistic physics dictate that trains must decelerate before taking sharp turns 
 \end{verbatim}
 
 \paragraph{Solver Heuristics}
-To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly. These heuristics make finding the solution around four times faster within our example environment (see figure \ref{fig:environment_image}), decreasing the computation time from 3072.10 seconds to 845.88 seconds:.
+To guide the solver's search process through the expanded state space, the encoding introduces specific \texttt{\#heuristic} directives to prioritize specific branches by penalizing waiting, scheduling trains one by one based on departure times, and instructing the solver to prefer paths where trains gain speed quickly. These heuristics make finding the solution around four times faster within our example environment (see figure \ref{fig:environment_image}), decreasing the computation time from 3072.10 seconds to 845.88 seconds:
 
 \begin{verbatim}
 % prefer to not wait
@@ -312,7 +311,7 @@ energy(ID,T2,E) :- action(train(ID),A,T),
                    cost_fac(ID,CF),
                    E = 100 * CF * 1/S * 1/S.
   \end{verbatim}
-  \item \textbf{Turning:} When an agent navigates a curve, centrifugal forces demand additional work. This is modeled by applying a 10\% penalty to the base straight-line movement cost, resulting in the calculation $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2 \cdot \frac{11}{10}$.
+  \item \textbf{Turning:} When an agent goes on a curve, centrifugal forces demand additional work. This is modeled by applying a 10\% penalty to the base straight-line movement cost, resulting in the calculation $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2 \cdot \frac{11}{10}$.
   \begin{verbatim}
 
 
