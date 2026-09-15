@@ -165,8 +165,8 @@ arrival(ID,T) :- reached(ID,T),
 \begin{frame}
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.6\textwidth]{images/baseline3_animation-38.jpeg}
-  \caption{Baseline Encoding in Action (at timestep 37) with \textcolor{color_base0}{train 0}, \textcolor{color_base1}{train 1}, \textcolor{color_base2}{train 2} and \textcolor{color_base3}{train 3}}
+  \includegraphics[width=0.6\textwidth]{images/environment.png}
+  \caption{Environment used to test the encodings}
   \label{fig:environment_image}
 \end{figure}
 \end{frame}
@@ -179,17 +179,159 @@ arrival(ID,T) :- reached(ID,T),
 \input{tables/tab_base1}
 \end{frame}
 
+\section{Acceleration Mechanics}
 \begin{frame}
-\input{tables/tab_base2}
+\frametitle{Acceleration Mechanics}
+\begin{itemize}
+  \item Speed Changes in General
+  \item Turning, Waiting, and Arrival Physics
+  \item Solver Heuristics
+\end{itemize}
 \end{frame}
 
-\begin{frame}
-\input{tables/tab_base3}
+\begin{frame}[fragile]
+\frametitle{Speed Changes in General}
+\begin{verbatim}
+% Interpret given train speeds as maximum speeds
+max_speed(ID,S) :- speed(ID,S).
+
+% Trains start with a speed of 1/4 
+temp_speed(ID, Dep+1, 4) :- start(ID,(_,_),Dep,_).
+\end{verbatim}
 \end{frame}
 
-\section{Energy Encoding Mechanics}
+\begin{frame}[fragile]
+\frametitle{Speed Changes in General}
+\begin{verbatim}
+% Allow gradual speed changed, while
+% respecting the physical limits of the train.
+% The train can change its speed up to one
+% step at a time
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1 
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 <= 4.
+
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Speed Changes in General}
+\begin{verbatim}
+% Lower Bound
+1{
+  temp_speed(ID,T2,S-1);
+  temp_speed(ID,T2,S)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 >= MS,
+   S+1 > 4.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Speed Changes in General}
+\begin{verbatim}
+% Upper Bound
+1{
+  temp_speed(ID,T2,S);
+  temp_speed(ID,T2,S+1)
+}1
+:- chosen(ID,T,A,_,_,_,_,T2),
+   A != wait,
+   temp_speed(ID,T,S),
+   max_speed(ID,MS),
+   S-1 < MS,
+   S+1 <= 4.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Speed Changes in General}
+\begin{verbatim}
+% In between (maintain speed)
+temp_speed(ID,T2,S) :- chosen(ID,T,A,_,_,_,_,T2),
+                       A != wait,
+                       temp_speed(ID,T,S),
+                       max_speed(ID,MS),
+                       S-1 < MS,
+                       S+1 > 4.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Turning, Waiting, and Arrival Physics}
+\begin{verbatim}
+% You have to take a turn with inverse speed >= 3 
+:- position(ID,_,T,Dir1),
+   temp_speed(ID,T,S),
+   T2 = T + S,
+   position(ID,_,T2,Dir2),
+   Dir1 != Dir2,
+   S < 3.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Turning, Waiting, and Arrival Physics}
+\begin{verbatim}
+% to be able to wait, you need to have speed 1/4
+reachable(ID,T,wait,X,Y,T+1,Dir) :- 
+                            position(ID,(X,Y),T,Dir),
+                            time(T+1),
+                            temp_speed(ID,T,4).
+
+% after waiting, you have to start with speed 1/4
+temp_speed(ID,T2,4) :- chosen(ID,T,wait,_,_,_,_,T2).
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Turning, Waiting, and Arrival Physics}
+\begin{verbatim}
+% you can only arrive at your goal if your 
+% inverse speed was 4 before
+:- reached(ID,T2),
+   temp_speed(ID,T1,S),
+   T2 = T1 + S,
+   S < 4.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Solver Heuristics}
+\begin{verbatim}
+% prefer to not wait
+wait_position(ID,X2,Y2,T2,Dir2) :-
+                     reachable(ID,T,wait,X2,Y2,T2,Dir2).
+                     
+#heuristic position(ID,(X2,Y2),T2,Dir2)
+           : wait_position(ID,X2,Y2,T2,Dir2).
+           [-50,1]
+
+% schedule trains one by one
+#heuristic position(ID,(X,Y),T,Dir) : start(ID,_,Dep,_).
+           [-Dep,1]
+
+% prefer getting faster
+#heuristic temp_speed(ID,T,S) : position(ID,_,T,_).
+           [-S,1]
+\end{verbatim}
+\end{frame}
+
+\section{Energy Mechanics}
 \begin{frame}
-\frametitle{Energy Encoding Mechanics}
+\frametitle{Energy Mechanics}
 \begin{itemize}
   \item Energy Cost Factors and Power Types
   \item Energy Consumption for Different Types of Actions (Braking, Turning, Coasting)
