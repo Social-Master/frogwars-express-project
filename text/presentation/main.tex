@@ -166,9 +166,28 @@ arrival(ID,T) :- reached(ID,T),
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.6\textwidth]{images/environment.png}
-  \caption{Environment used to test the encodings}
+  \caption{Environment used to test the encodings. The global simulation time is set to 63 time steps}
   \label{fig:environment_image}
 \end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Agents}
+\begin{verbatim}
+train(0).
+start(0,(6,19),0,w).
+end(0,(10,5),63).
+speed(0,1).
+pow_type(0, electro).
+weight(0,2).
+
+train(1).
+start(1,(9,5),0,e).
+end(1,(7,19),63).
+speed(1,1).
+pow_type(1, diesel).
+weight(1,1).
+\end{verbatim}
 \end{frame}
 
 \begin{frame}
@@ -334,7 +353,7 @@ wait_position(ID,X2,Y2,T2,Dir2) :-
 \frametitle{Energy Mechanics}
 \begin{itemize}
   \item Energy Cost Factors and Power Types
-  \item Energy Consumption for Different Types of Actions (Braking, Turning, Coasting)
+  \item Energy Consumption for Different Types of Actions (Moving Straight, Turning, Braking)
   \item Encoding Optimization
 \end{itemize}
 \end{frame}
@@ -358,68 +377,76 @@ cost_fac(ID,CF) :- pow_cost_fac(ID,PCF),
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Cost of Braking}
-\begin{verbatim}
-% Tracks whether the train was waiting
-% in the previous time step
-prev_wait(ID,T) :- action(train(ID),_,T),
-                   time(T-1),
-                   action(train(ID),wait,T-1).
-
-energy(ID,T+1,E) :- action(train(ID),wait,T),
-                    speed(ID,S),
-                    not prev_wait(ID,T),
-                    cost_fac(ID,CF),
-                    E = CF * 24 / S.
-\end{verbatim}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Cost of Coasting}
+\frametitle{Cost of Moving Straight}
 \begin{verbatim}
 energy(ID,T2,E) :- action(train(ID),A,T),
                    A != wait,
                    position(ID,_,T,Dir),
-                   speed(ID,S),
+                   temp_speed(ID,T,S),
                    T2 = T + S,
                    position(ID,_,T2,Dir),
                    cost_fac(ID,CF),
-                   E = CF.
+                   E = 100 * CF * 1/S * 1/S.
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Cost of Turning}
+\begin{verbatim}
+% Energy loss due to curve resistance
+% 10% penalty applied to straight-moving energy formula
+energy(ID,T2,E) :- position(ID,_,T,Dir1),
+                   temp_speed(ID,T,S),
+                   T2 = T + S,
+                   position(ID,_,T2,Dir2),
+                   Dir1 != Dir2,
+                   cost_fac(ID,CF),
+                   E = 100 * CF * 1/S * 1/S  * 11/10.
 \end{verbatim}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Cost of Braking}
 \begin{verbatim}
-energy(ID,T2,E) :- position(ID,_,T,Dir1),
-                   speed(ID,S),
-                   T2 = T + S,
-                   position(ID,_,T2,Dir2),
-                   Dir1 != Dir2,
-                   cost_fac(ID,CF),
-                   E = CF * 12 / S.
+% 40% return of energy due to regenerative braking
+prev_wait(ID,T) :- action(train(ID),_,T),
+                   time(T-1),
+                   action(train(ID),wait,T-1).
+energy(ID,T+1,E) :- action(train(ID),wait,T),
+                    not prev_wait(ID,T),
+                    cost_fac(ID,CF),
+                    E = -1 * 100 * 4/10 * CF * 1/4 * 1/4.
 \end{verbatim}
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Encoding Optimization}
-\begin{verbatim}
-% Optimize for energy efficiency
-% Arrival time still has higher priority than energy
-#minimize { E@1,ID,T : energy(ID,T,E) }.
-\end{verbatim}
-\end{frame}
+\section{Results}
 
-\section{Results and Comparison with Baseline Model}
 \begin{frame}
-\frametitle{Results and Comparison with Baseline Model}
+\frametitle{Results}
+\input{tables/tab_energy0_1}
+\end{frame}
 
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_energy0_2}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_energy1_1}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_energy1_2}
 \end{frame}
 
 \section{Conclusion}
 \begin{frame}
 \frametitle{Conclusion}
-
+\begin{itemize}
+  \item
+\end{itemize}
 \end{frame}
 
 \end{document}
