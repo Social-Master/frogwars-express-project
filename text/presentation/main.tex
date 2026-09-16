@@ -165,42 +165,6 @@ arrival(ID,T) :- reached(ID,T),
 \end{verbatim}
 \end{frame}
 
-\begin{frame}
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.6\textwidth]{images/environment.png}
-  \caption{Environment used to test the encodings. The global simulation time is set to 63 time steps}
-  \label{fig:environment_image}
-\end{figure}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Agents}
-\begin{verbatim}
-train(0).
-start(0,(6,19),0,w).
-end(0,(10,5),63).
-speed(0,1).
-pow_type(0, electro).
-weight(0,2).
-
-train(1).
-start(1,(9,5),0,e).
-end(1,(7,19),63).
-speed(1,1).
-pow_type(1, diesel).
-weight(1,1).
-\end{verbatim}
-\end{frame}
-
-\begin{frame}
-\input{tables/tab_base0}
-\end{frame}
-
-\begin{frame}
-\input{tables/tab_base1}
-\end{frame}
-
 \section{Acceleration Mechanics}
 \begin{frame}
 \frametitle{Acceleration Mechanics}
@@ -423,6 +387,50 @@ energy(ID,T+1,E) :- action(train(ID),wait,T),
 \end{frame}
 
 \section{Results}
+
+\begin{frame}
+\frametitle{Results}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/environment.png}
+  \caption{Environment used to test the encodings. The global simulation time is set to 63 time steps}
+  \label{fig:environment_image}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Results}
+\begin{verbatim}
+train(0).
+start(0,(6,19),0,w).
+end(0,(10,5),63).
+speed(0,1).
+pow_type(0, electro).
+weight(0,2).
+
+train(1).
+start(1,(9,5),0,e).
+end(1,(7,19),63).
+speed(1,1).
+pow_type(1, diesel).
+weight(1,1).
+\end{verbatim}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_base0_1}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_base0_2}
+\end{frame}
+
+\begin{frame}
+\frametitle{Results}
+\input{tables/tab_base1}
+\end{frame}
 
 \begin{frame}
 \frametitle{Results}
