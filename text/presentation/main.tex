@@ -28,7 +28,10 @@
 \section{Motivation: Energy Efficiency Problem}
 \begin{frame}
 \frametitle{Motivation: Energy Efficiency Problem}
-
+\begin{itemize}
+  \item Model the real-world better (Trains' engine types and masses)
+  \item Add energy efficiency as a secondary objective to pathfinding (How do the energy constraints affect pathfinding?)
+\end{itemize}
 \end{frame}
 
 \section{Baseline ASP Model}
@@ -446,7 +449,7 @@ energy(ID,T+1,E) :- action(train(ID),wait,T),
 \frametitle{Conclusion}
 \begin{itemize}
   \item Our encoding can capture energy consumption behavior of trains accurately 
-  \item Work needs to be done regarding computation time: Clingo took 12 minutes to find a solution for this small environment
+  \item Work needs to be done regarding computation time: Clingo took 12 minutes to find a solution for this small environment (baseline encoding: 16 seconds)
   \item Our encoding does not take slopes into account
 \end{itemize}
 \end{frame}
