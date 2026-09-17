@@ -346,6 +346,8 @@ cost_fac(ID,CF) :- pow_cost_fac(ID,PCF),
 \begin{frame}[fragile]
 \frametitle{Cost of Moving Straight}
 \begin{verbatim}
+% (Kinetic) Energy consumed is proportional
+% to square of speed
 energy(ID,T2,E) :- action(train(ID),A,T),
                    A != wait,
                    position(ID,_,T,Dir),
