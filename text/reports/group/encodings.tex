@@ -298,7 +298,16 @@ The trains' masses and energy types are all set in the environment definition.
 \paragraph{Energy Costs of Actions}
 Depending how fast the train moves and what it does, it consumes different amounts of energy. In the encoding, energy is divided into three distinct kinematic states:
 \begin{itemize}
-  \item \textbf{Moving Straight:} The energy consumed while moving forward is proportional to the square of the train's speed. The encoding calculates this using the formula $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2$. The multiplier of 100 is explicitly introduced to prevent precision loss from unnecessary rounding during the solver's integer calculations.
+  \item \textbf{Moving Straight:} For an object moving in a straight ahead \parencite[169]{nolting_grundkurs_2006}, its kinetic energy is calculated using this formula:
+  \begin{equation}
+  \label{eq:kinetic_energy}
+  T = \frac{m}{2} \dot{x}^2 
+  \end{equation}
+  
+  whereby $\dot{x}$ is the velocity and $m$ the mass.
+  
+    This is reflected in the encoding with the formula $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2$, whereby $\frac{1}{S}$ is the speed (being the inverse of Flatland's inverse speed), and $CF$ the train's energy cost factor incorporating its mass.
+  To prevent loss of precision, the multiplier $100$ is introduced:
   
   \begin{verbatim}
 % Cost of moving straight
