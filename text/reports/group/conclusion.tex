@@ -1,7 +1,7 @@
 \section{Conclusion}
 In this project, we extended the railway scheduling problem within the Flatland framework by modeling energy consumption using Answer Set Programming (ASP). Our results demonstrate that the ASP encoding accurately captures physical realities at the local level: energy costs dynamically scale based on vehicle mass, power type, and specific kinematic states.
 
-However, our current ASP encoding exhibits limitations regarding computational scalability. The introduction of dynamic speed choices expands the search space exponentially, because the solver must branch through many kinematic combinations across extended time horizons to determine the final energy penalties.
+However, our current ASP encoding exhibits limitations regarding computational scalability. The introduction of dynamic speed choices expands the search space exponentially, because the solver must branch through many kinematic combinations across extended time horizons to find a solution satisfying the arrival times.
 
 We consider several extensions and modifications for future work based on our findings:
 \begin{itemize}
