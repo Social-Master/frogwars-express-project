@@ -274,7 +274,7 @@ wait_position(ID,X2,Y2,T2,Dir2)
            : position(ID,_,T,_). [-S,1]
 \end{verbatim}
 
-The \texttt{#minimize} directive from the baseline encoding was removed, as the it increased the computation time of the acceleration encoding.
+The \texttt{\#minimize} directive from the baseline encoding was removed, as the it increased the computation time of the acceleration encoding.
 
 \subsection{Energy Encoding Mechanics}
 The energy efficiency encoding adds new rules to represent the concept of energy and how different actions of the agents affect their usage and consumption of energy.
@@ -322,7 +322,7 @@ energy(ID,T2,E) :- action(train(ID),A,T),
                    cost_fac(ID,CF),
                    E = 100 * CF * 1/S * 1/S.
   \end{verbatim}
-  \item \textbf{Turning:} When an agent goes on a curve, centrifugal forces demand additional work. This is modeled by applying a 10\% penalty to the base straight-line movement cost, resulting in the calculation $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2 \cdot \frac{11}{10}$.
+  \item \textbf{Turning:} In physical railway operations, negotiating a curve generates substantial mechanical resistance at the wheel-rail interface \cite[p.~2--3]{wu_curving_2022}. Because Flatland operates on a discrete grid with only sharp 90° curves, traditional empirical calculations cannot be applied meaningfully. To model this energy loss within the solver's constraints, we abstract curving resistance using a heuristic value of 10\% multiplied to the previously explained formula for energy consumption on a straight track. This value was chosen because it penalizes unnecessary zigzagging heavily enough without making essential turns prohibitively expensive. This results in the calculation $E = 100 \cdot CF \cdot \left(\frac{1}{S}\right)^2 \cdot \frac{11}{10}$.
   \begin{verbatim}
 
 % Cost of turning
