@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{nolting_grundkurs_2006}
+Nolting, W. (ed.): Grundkurs {Theoretische} {Physik} 1: {Klassische}
+  {Mechanik}. Springer-{Lehrbuch}, Springer Berlin Heidelberg, Berlin,
+  Heidelberg, 8 edn. (2006). \doi{10.1007/978-3-540-34833-7}
+
+\bibitem{osswald_railway_2026}
+Osswald, K., Leiber, T.: Railway {Scheduling}: {Incremental} {Solving} and
+  {Pick} {Up} and {Delivery} with {Sequencing} {Constraints}. Tech. rep.,
+  University of Potsdam, Potsdam, Germany (Mar 2026)
+
+\bibitem{wu_curving_2022}
+Wu, Q., Wang, B., Spiryagin, M., Cole, C.: Curving resistance from wheel-rail
+  interface. Vehicle System Dynamics  \textbf{60}(3),  1018--1036 (Mar 2022).
+  \doi{10.1080/00423114.2020.1843689},
+  \url{https://www.tandfonline.com/doi/full/10.1080/00423114.2020.1843689}
+
+\end{thebibliography}
