@@ -7,9 +7,9 @@ from flatland.envs.rail_env import RailEnvActions
 
 def parse_clingo_output(filepath):
     """
-    Parses a Clingo text output file to extract actions, positions, speeds, and energy.
-    Returns a dictionary mapping: data[agent][timestep] = {properties...}
-    and the maximum timestep found.
+    Parses Clingo output txt to extract actions, positions, speeds, and energy.
+    Returns dictionary mapping: data[agent][timestep] = {properties...}
+    and max timestep found.
     """
     data = defaultdict(lambda: defaultdict(dict))
     max_timestep = 0
@@ -50,10 +50,10 @@ def parse_clingo_output(filepath):
 
 def generate_csv_with_env(data, max_timestep, env_path, output_path, is_mixed=False):
     """
-    Steps through the Flatland environment using Clingo's actions to extract 
-    the live agent status, then writes the flattened timeline to a CSV.
+    Steps through Flatland environment using Clingo's actions to extract 
+    live agent status, then writes the timeline to a CSV.
     """
-    # 1. Load the environment
+    # 1. Load environment
     with open(env_path, "rb") as f:
         env = pickle.load(f)
 
@@ -70,29 +70,29 @@ def generate_csv_with_env(data, max_timestep, env_path, output_path, is_mixed=Fa
         3: 'moving', 4: 'stopped', 5: 'malfunction (on map)', 6: 'done'
     }
 
-    # 3. Step through simulation and inject status into our data dictionary
+    # 3. Step through simulation and inject status into data dictionary
     for t in range(max_timestep + 1):
         action_dict = {}
         
-        # Build the action dictionary for this specific timestep
+        # Build action dictionary for this specific timestep
         for agent_id, agent_data in data.items():
             if t in agent_data and 'given_command' in agent_data[t]:
                 cmd_str = agent_data[t]['given_command']
                 if cmd_str in clingo_to_flatland_action:
                     action_dict[agent_id] = clingo_to_flatland_action[cmd_str]
         
-        # Record the state for all agents at this timestep before taking the action
+        # Record state for all agents at this timestep before taking action
         for agent_id, agent_info in enumerate(env.agents):
             if t in data[agent_id]:
                 data[agent_id][t]['status'] = state_map.get(agent_info.state, 'unknown')
         
-        # Advance the simulation
+        # Advance simulation
         if action_dict:
             _, _, done, _ = env.step(action_dict)
             if done.get('__all__', False):
                 break
 
-    # 4. Flatten the enriched dictionary and sort chronologically
+    # 4. Flatten dictionary and sort chronologically
     rows = []
     for agent, t_data in data.items():
         for t, props in t_data.items():
