@@ -1,0 +1,42 @@
+\documentclass{llncs}
+
+\usepackage[T1]{fontenc}
+
+\usepackage{newtxtext}       
+\usepackage[varvw]{newtxmath}     
+
+
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Individual Report Railway Scheduling}
+
+\author{Paul Tennigkeit\newline
+\email{paul.tennigkeit@uni-potsdam.de}}
+
+\institute{University of  Potsdam, Potsdam  14469, Germany 
+\url{https://www.uni-potsdam.de/en/university-of-potsdam}}
+
+\maketitle              
+
+\section{Contributions}
+\subsection{Ideation}
+I had the idea of encoding energy costs, which we agreed to be our topic. As these costs depend a lot on the speed of a train, I introduced the idea of encoding variable speed. I also had the idea of using heuristics instead of optimization in the acceleration encoding to reduce solving time.
+
+\subsection{Programming}
+We agreed to use my encoding for reaching a goal as a baseline encoding for our team. I also coded all of the acceleration and energy cost logic, including heuristics in the acceleration encoding.
+
+\subsection{Debugging}
+As I did the programming, I was mainly responsible for the debugging too.
+\subsection{Presentation}
+
+I presented the progress of our encodings in the weekly meetings. In the final presentation I talked about our example environment results and conclusions.
+
+\section{Challenges}
+As it is hard to foresee the impact of encoding or environment changes on the solving time, I had problems to find an environment for different encodings, which kept solving time reasonable while still being complex enough to show different behaviors. Also the maxtime has a huge impact on solving time and the environments we could generate were not applicable to temporary speeds in that regard (as their maxtimes were too low). I had to run a lot of tests to determine the lowest maxtime that is still high enough to keep the environment satisfiable.
+
+\section{Recommendations}
+As raw outputs of clingo runs are hard to read, I would recommend to use some sort of visualization to support that. Also, future students should definitely look into heuristics if they have an encoding without optimization. Even a simple heuristic using basic domain knowledge can reduce the time to find the first satisfying model by more than 50 percent (just make sure to use the {-}{-}heuristic=domain flag).  
+
+\end{document}
